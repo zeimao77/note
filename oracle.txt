@@ -1,0 +1,415 @@
+SQL语言严格来说会分为三类
+ DML 数据操作语言：主要指的是数据库的查询和更新操作
+ DDL 数据定义语言：主要指的是数据对象（表，用户）的创建部分，这部分需要使用到相关的范式
+ DCL 数据库控制语言：主要是进行权限的管理操作
+
+Oracle服务：
+OracleOraDb11g_home1TNSListener：是监听服务
+OracleServiceSID:数据库，通常情况下SID和数据库名字一样
+Oracle卸载
+Oracle正常安装完成：
+ 1.使用Oracle提供的卸载程序
+ 2.重启电脑，进入安全模式
+ 3.删除磁盘路径
+ 4.删除注册表中所有与Oracle有在内容
+ 5.重启
+
+格式化指令：
+set linesize 300;
+set pagesize 30;
+
+scott用户表的结构 
+
+范围查询 
+[NOT] BETWEEN ... AND ... 
+[NOT] IN
+
+Oracle 系统用户
+ sys system 高权限  sys > system
+ sysman 用于操作企业管理器使用  管理员级别
+ scott （tigger)
+
+ [username/password][@server][as sysdba|sysoper]
+
+ connect username/password [as sysdba]  服务器与客户端在同一机器上 不用输入服务地址
+ show user命令  查看登录用户
+ dba_users数据字典：
+ scott用户默认是锁定的 
+ alter user username account unlock 解锁
+ alter user username account lock 锁定
+
+ 表空间：
+  表空间概念：
+  一个数据库由一个或多个表空间组成
+  永久表空间：永久化存放的对象
+  临时表空间：数据库操作过程中临时存放数据
+  UNDO表空间：事务修改之前的数据
+  查看用户的表空间
+  创建、修改、删除表空间
+
+  dba_tablespaces  针对系统管理员级别用户
+  user_tablespaces  普通用户
+  SQL> select tablespace_name from dba_tablespaces;
+  SYSTEM 存储系统管理员所使用的视图，表，存储过程等
+  SYSAUX example表空间
+  UNDOTBS1 存储Undo信息
+  TEMP 临时信息
+  USERS 永久用户信息
+  EXAMPLE
+
+  dba_users
+  user_users数据字典 
+  select default_tablespace,temporary_tablespace from dba_users where username = 'SYSTEM';
+  alter user <username> default|temporary tablespace <tablespace_name>
+
+创建表空间
+create [temporary] tablespace <tablespace_name> tempfile|datafile 'xxx.dbf' size xx
+create tablespace test 'f:/database/test.dbf' size 20M;
+
+dba_data_files 数据字典 
+select * from dba_data_files where tablespace_name = 'TEST';
+dba_temp_files 数据字典
+修改表空间
+修改状态：联机（默认）或脱机
+alter tablespace <tablespace_name> online|offline
+查询：dba_tablespaces status字段
+online 可读可写
+offline 脱机
+read only 只读
+设置只读或可读写状态
+alter tablespace <tablespace_name> <read only|read write>
+查询：dba_tablespaces status字段
+
+alter tablespace <tablespace_name> add datafile 'xxx.dbf' size xx;
+alter tablespae TEST add datafile 'test1.dbf' size 10m;
+alter tablespace <tablespace_name> drop datafile 'xxx.dvf' 
+
+drop tablespace <tablespace_name> [including contents] 删除表空间[数据文件一并删除]
+
+操作表：
+字符型
+char(n) -固长字符 n<2000
+nchar(n) -按unicode存放，存放汉字 n<1000
+varcgar2(n) -可变长度 n<2000
+nvarchar2)(n) n<1000
+
+数值型
+number(p,s) p有效数字,s小数点后的位数【例number(5,2) 有效5位 保留2位小数 123.45】
+float(n) 
+
+日期
+date 公元前4712.1.1到公元9999.12.31 精确到秒
+timestamp 
+
+blob  <4g  以二进制方式存放
+clob  <4g  以字符串方式存放
+
+创建表
+create table <table_name>(
+ column_name datatype ,...
+);
+create table <table_name> as ＜select　．．．＞
+修改表
+alter table <table_name> add <column_name> <datatype>
+alter table <table_name> modify <column_name> <datatype>
+alter table <table_name> drop column <column_name>;
+alter table <table_name> rename column <column_name> to <new_column_name>
+rename <table_name> to <new_table_name>
+
+truncate table <table_name> 清空表数据 
+drop table <table_name>
+
+create table <table_new>  as select column1,... from <table_old>
+insert into <table_new>[(column1,...)] select column1,... from <table_old>
+update table_name set column1=value1,... [where conditions]
+delete from <table_name> [where conditions]
+
+约束
+非空约束  not null
+user_constraints 数据字典
+constraint_name  约束名字
+table_name 表名
+status 状态信息（disable enable）
+alter table <table_name> modify <column_name> <datatype> [not] null
+主键约束 primary key
+constraint <constraint_name primary key(column_name1,...);
+alter table <table_name> add constraint <constraint_name> primary key(column_name1,...);
+alter table <table_name> rename constraint <old_constraint_name> to <new_name>
+alter table <table_name> <disable|enable> constraint <constraint_name>;
+alter table <table_name> drop constraint <constraint_name>
+alter table <table_name> drop primary key[cascade] 集联删除
+外键约束 references table2(column_name)
+create table table1 (column_name datatype references table2(column_name),...);
+create table <table_name>(<column_name> datatype,constraint <constraint_name> foreign key(column_name) references table_name(column_name)[on delete cascade]);
+alter table <table_name> add constraint <constraint_name> foreign key(column_name) references <table_name>(column_name) [on delete cascade]
+alter table <table_name> disable|enable constraint <constraint_name>
+alter table <table_name> drop <constraint_name>
+唯一约束 unique
+create table <table_name> (column_name,datatype,unique)
+create table <table_name> (column_name,datatype,constraint <constraint_name> unique(column_name));
+alter table <table_name> add constraint <constraint_name> unique(column_name);
+alter table <table_name> disable|enable constraint <constraint_name>
+alter table <table_name> drop <constraint_name>
+检查约束
+create table <table_name>(column_name datatype check(expressions),);
+create table <table_name>(column_name datatype,constraint <constraint_name> check(expressions));
+alter table <table_name> add constraint <constraint_name> check(expressions);
+
+column <column_name> heading <new_name> 修改查询显示字段名 
+column <column_name> for/format dataformat 修改查询显示格式
+column <column_name> clear 清除掉格式
+dataformat :
+a10 长度最大为10
+9999.9  9代表一个数字  如果显示不够 将显示#，类似excel
+$9999.9  显示￥1234.5
+
+运算符和表达式 like
+_代表任意一个字符 
+%代表任意多个字符
+
+函数
+数值函数：
+四舌五入：round(n[,m]) -省略m,m=0;m>0 小数点后m位，m<0 小数点前m位
+trunc(n,[,m]) -去尾法截取
+select round(2.22) from dual;
+进一法:CEIL(n)
+去尾法:floor(n)
+绝对值：abs(n)
+取余：mod(m,n) m/n取余  m,n有null返回null
+取幂：power(m,n) m的n次幂
+平方根：sqrt(n) sqrt(16) = 4
+
+字符串函数：
+upper(串) 
+lower(串)
+substr(串,[start[,length]])  start<0 从字符串尾开始
+initcap(串)  -首字母大写
+length(串) -取得字符串的
+replace(串,old str,new str) 替换
+
+&输入
+select * from emp where ename = upper('&inputname');
+
+日期时间函数
+sysdate 伪列里面包含有日期时间内容，只不过只显示时间数据
+systimestamp
+select sysdate-7 from dual;
+函数：
+add_months(日期,月数)
+months_between(日期，日期)
+last_day(日期) 指定月最后一天
+
+转换函数
+to_char(日期|数字，转换格式) 将日期数字转换成字符串
+日期：年(yyyy)、月(mm)、日(dd);
+时间：时(hh,hh24)、分(mi)、秒(ss);
+数字：任意数字(9)、本地货币(L);
+to_date(字符串，转换格式) 将字符串转日期
+to_number(字符串) 将符串转数字
+select to_char(1232343443543,'999,999,999,999,999,999') from dual;
+
+其它函数
+val(值,default-value) 如果是空则使用默认值处理，如果不是空则使用值处理
+
+CASE <COLUMN_NAME> WHEN <VALUE1> THEN <RESULT1>,...[ELSE RESULT] END
+select username,case username when when 'aaa' then '计算机' when 'bbb' then '市场' else '其它部门' end as '部门' from user;
+select case when <column_name>=value1 then result1,...[else result] end
+decode(<column_name>,value1,result1,... defaultvalue);
+select ename,decode(job,'CLERK','办事员','SALESMAN','销售员','MANAGER','经理',job) as job from emp;
+
+伪列：
+ORACLE提供了许多伪列
+ROWNUM　可以取前Ｎ行数据
+ROWID　例：AAAR7kAAEAAAACrAAA
+数据对象编号：AAAR7k
+数据保存文件编号：AAE
+数据保存的块号：AAAACr
+数据保存的行号：AAA
+
+delete from myemp where rowid in (select max(rowid) from myemp group by ename,job having count(*)>1);
+delete from myemp where rowid not in (select min(rowid) from myemp group by ename,job);
+
+序列：
+create sequence 序列名称
+[increment by 步长]  [start with 开始值]
+[maxvalue 最大值 |nomaxvalue]
+[minvalue 最小值 |nominvalue]
+[cycle|nocycle]
+[cache 缓存数据|nocache]
+使用序列：
+序列对象.nextval 表示序列增长指定步长 
+序列对象.currval 表示取得当前对象，不增长 
+循环序列：
+create sequence forseq
+increment by 2
+maxvalue 9
+minvalue 1
+start with 1
+cycle
+nocache;
+
+非系统用户可以访问sys.dual表，相当于给dual创建了别名
+创建别名：create [public] synonym fro scott.emp;
+当创建别名之后就可以利用别名查询
+
+视图：
+create [or replace] view as select...
+
+set autotrace on
+可以开启sql调试
+
+用户管理（系统权限、对象权限）
+使用DCL(数据控制语言)可以实现用户权限的控制，但必需维护用户的对象信息。
+create user 用户名 identified by 密码; -创建用户,但是没有任何权限
+grant <permissions> to <username>
+常用系统权限：
+create session;create sequence;create synonym(创建同名对象);create table(在用户模式创建表);create any table(在任何模式创建表);drop table(在用户模式删除表);drop any table(在任何模式删除表);create procedure;create user;create view;drop user;execute any procedure;...
+正常操作需要地堆权限，所以ORACLE里提供了两个角色 CONNECT,RESOURCE。分配这两个角色的用户就可以正常操作了。
+grant connect,resource to <username> 给用户分配connect、resource角色
+一量有了用户，用户可能存在忘记密码，
+alter user <username> identified by <new-password>
+alter user <username> password expire;
+alter user <username> account lock/unlock
+可以将某用户的操作对象权限授予其它用户
+对象的权限只有四种：insert、update、select、delete
+grant select,insert on scott.emp to abc;
+回收权限
+revoke <permissions> from <username>
+删除用户
+drop user dog cascade 
+
+数据的导入导出
+数据的导出：
+在磁盘上建立一个文件夹，并切换到此目录，然后输入exp命令进行操作，默认导出的文件名称为expdat.dmp
+数据的导入：切换到备份目录，输入imp命令进行操作
+数据库的冷备份：指让数据库服务停止，专门去备份数据，网游一般每会停服几个小时，一般都在做冷备份;数据库存的冷备份内容是最完整的。需要备份以下内容：
+控制文件：可以通过“v$controlfile”数据字典查找
+重做日志文件：可以通过“v$logfile”数据字典查找
+数据文件(表空间)：可以通过“v$datafile”数据字典查找
+核心配置文件(file):可以通过 show paramter pfile查找
+1.使用sys登录
+2. select * from v$controlfile;
+3. select * from v$logfile;
+4. select * from v$datafile;
+5. show parameter pfile;
+6.记录好以上所有文件的路径 
+7.shutdown immediate; -关闭服务
+8.拷贝以上文件到备份目录
+9.startup -启动服务器
+对于一些要求不严格的数据库进行冷备份就足够了，但像银行一些不能关闭数据库的情况得使用热备份;
+
+设计范式：
+所有设计范式只供参考，最多只在最初设计的时候使用;一般的设计原则：根据业务需要尽可能减少多表查询或复杂查询
+第一范式：数据库的每个字段不可以再分;严格来讲是属于使用标准数据类型定义的表;
+第二范式：数据表之中不存在非关键字段对任意一候选关键字的部分函数依赖;
+|-----------------------------------------------|
+|student_id   |student_name   |course   |score  |
+|1            |张三           |mysql    |80     |
+|2            |李四           |oracle   |80     |
+|3            |王五           |sqlserver|90     |
+|1            |张三           |oracle   |90     |
+|-----------------------------------------------|
+由于存在多对多的关系 所以按第二范式要求应分成三张表来维护数据;多对多的查询代码的复杂度较高;
+第三范式：数据表之中不存在非关键字段对任意一修行关键字的传递函数依赖;
+|--------------------------------------------|
+|student_id   |student_name   |class_name    |
+|1            |张三           |一班          |
+|2            |李四           |二班          |
+|3            |王五           |二班          |
+|--------------------------------------------|
+由于数据存在一对多的关系，所以数据应该分解成两张表
+
+接收一个键盘输入：由键盘输入的值都是字符串
+set serveroutput on
+accept abc prompty '提示信息';
+declare
+ pnum number:=&abc --abc是一个地址，需要使用&取值
+begin ...
+
+变量声明
+<变量名> 类型[:=初始值];
+常见类型：char、varchar2、date、number、boolean、long
+引用型：字段%type 示例: name emp.ename%type --表示name的类型和emp.ename的类型相同
+记录型：表%rowtype  示例: test emp%rowtype --表示test的类型为emp表的行类型;也有 .empno; .ename; .sal ;等属性 
+
+常量声明
+<变量名> CONSTANT 类型:=初始值;
+示例: pi constant number(5,3):=3.14;
+
+IF语句：
+IF 条件 THEN 语句 END IF;
+IF 条件 THEN 语句 ELSE 语句 END IF;
+IF 条件 THEN 语句 ELSEIF 条件 THEN 语句 ELSE 语句 END IF;
+
+循环语句：
+WHILE 条件 LOOP 循环体语句 END LOOP;
+LOOP EXIT [WHEN 条件] 循环体语句 END LOOP;
+FOR 变量 IN 取值(1..3) LOOP 循环体 END LOOP;
+
+异常处理：
+EXCEPTION WHEN <异常类型> THEN 语句 WHEN OTHERS THEN 语句 END;
+
+函数
+用户自定义异常函数：RAISE_APPLICATION_ERROR(错误号20000-20999,消息[,true|false])  -true表示错误放在先前的堆栈上。
+ALTER TRIGGER <触发器名> DISABLE
+ALTER TRIGGER <触发器名> ENABLE
+ALTER TABLE [schema.]table_name DISABLE ALL TRIGGERS
+ALTER TABLE [schema.]table_name ENABLE ALL TRIGGERS
+DROP TRIGGER <触发器名>
+
+游标：
+CURSOR 游标名 [(参数名 数据类型[,参数名，数据类型])] IS SELECT语句;  --定义游标
+OPEN 游标名  --打开游标
+CLOSE 游标名  --关闭游标
+FETCH 游标名 INTO 变量名  --取一行数据放到变量中
+游标有四个属性：
+%found:取到了记录值为true,否则为false
+%notfound:没有取到记录值为true,否则为false
+%isopen:判断光标是否打开
+%rowcount:影响的行数
+ORACLE数据库默认允许在同一个会话中打开300个光标
+可以通过命令：
+alter system set open_cursors=400 scope=both;  --修改最大打开光标为400
+scope取值有三个：
+both  当前实例和配件文件都修改
+memory  只修改当前实例
+spfile  只修改配置文件，因此数据库需要重启才生效
+如果定义了带参数的光标，在打开的时候需要传递参数
+CURSOR CEMP(in_sal number) is select ename,job from emp where sal < in_sal;
+隐式游标是系统自动生成的，每执行一个DML语句就会产生一上隐式游标，名字叫SQL；
+隐匿游标不可以OPEN CLOSE FETCH这些操作
+
+触发器：
+触发器有两个特殊的伪列：  :new --为一个引用最新的列值 :old --为一个引用修改前的列值
+且这两个变量只有使用了FOR EACH ROW 时才存在 ，且UPDATE语句两个都有，而INSERT 只有:NEW  , DELETE只有:OLD
+CREATE [OR REPLACE] TRIGGER <触发器> BEFORE|AFTER INSERT|DELETE|UPDATE [OF <列名>] ON <表名>
+[FOR EACH ROW] WHEN (<条件>) 语句 
+
+
+
+
+--示例
+select * from emp;
+set serverout on;
+declare
+cursor cemp(in_sal emp.sal%type) is select empno,ename,job,mgr from emp where sal < in_sal;
+empno emp.empno%type;
+ename emp.ename%type;
+job emp.job%type;
+mgr emp.mgr%type;
+begin
+open cemp(1000);
+loop
+    fetch cemp into empno,ename,job,mgr;
+    exit when cemp%notfound;
+    dbms_output.put_line(cemp%rowcount||'--'||empno||'--'||ename||'--'||job||'--'||mgr);
+end loop;
+close cemp;
+end;
+/
+
+
+
+
+
+

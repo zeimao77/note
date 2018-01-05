@@ -1,0 +1,410 @@
+﻿format 格式化磁盘
+convert 转换文件系统NTFS
+label 创建/删除/修改卷标   >label f: 软件  --修改f盘卷标为软件
+vol 显示磁盘卷标  >vol f:
+chkdsk 检查磁盘并显示状态报告 >chkdsk d: /f  --检查驱动器D，并修复错误
+recover 从有问题的磁盘恢复可读信息
+defrag 磁盘碎片整理 defrag d: -a -v --对D盘进行碎片整理
+
+cmd操作
+mkdir = md
+rmdir = rd
+copy  >copy Main.class f:\Main.class
+xcopy  
+>xcopy H:\git\learngit c:\users\mao\desktop\temp /e 过滤隐藏文件
+>xcopy H:\git\learngit c:\users\mao\desktop\temp /e /h 
+cd
+dir  >DIR /A:A
+rename  >rename readme.txt learngit.txt
+del =erase >del tomcat.txt
+attrib >attrib jvm.txt +h  -更改文件属性为隐藏
+replace >replace Main.class C:\Users\Mao\Desktop\temp\learngit /s
+CHCP 65001 就是换成UTF-8代码页/936 可以换回默认的GBK/437 是美国英语 
+type  >type jvm.txt
+find  >find "-XX:" jvm.txt  查找所有含有-XX:字符串的行
+fc 比较两个文件  >fc Main.java Main1.java
+
+cmd  cmd /t:80
+start command ...   >start ping 127.0.0.1 -n 10
+color [fg]  >color 8f
+title [string]
+prompt [text] 更改命令提示
+doskey 撤回windows命令、编辑命令行并创建宏
+exit
+set 环境变量  >set auth=zeiamo    >set auth=%auth%;dd    >set auth=
+tree
+path 打印或设置path
+date  >date /t
+time  >time /t
+shutdown  >shutdown -s -t 0
+schtasks 
+ntsd -c q -p PID结束系统进程
+tasklist 显示进程
+taskkill  杀死进程
+
+网络
+telnet
+open 192.168.120.8 80
+GET /index.html HTTP/1.1
+close 
+quit
+netstat >netstat -p tcp
+ping
+ipconfig  获取网络配置信息
+ipconfig /release 命令取消IP租用
+getmac  获取网上地址表
+arp  显示和修改本地arp列表 
+explorer 资源管理器
+
+
+批处理命令
+echo [{on | off}] [message]
+call 调用脚本
+--------------------------------------------
+rem 注释行
+@echo off
+:begin
+echo please put a new disk into dirver a
+pause
+goto begin
+--------------------------------------------
+@echo off
+if not exist Main45645.java goto end
+echo find Main.java
+:end
+echo End
+--------------------------------------------
+@echo off
+choice /C abc /M "DEFRAG,MEM,END"
+if errorlevel 3 goto end  rem c
+if errorlevel 2 goto mem  rem b
+if errorlevel 1 goto defrag  rem a
+:defrag
+echo DEFRAG
+goto end
+
+:mem
+echo MEM
+goto end 
+
+:end 
+echo good bye
+--------------------------------------------
+@echo off
+mode con lines 50
+CHCP 65001
+title 定时关机
+color 1f
+cls
+echo.
+echo.
+echo.
+echo.
+echo           时间使用24小时制（如14:07）
+echo.
+echo             如果您不按要求输入 
+echo.
+echo           我们将为您清除定时任务 
+echo.
+echo.
+echo.
+echo.
+echo ----------------------------------------------------------
+echo.
+set times=
+set /p times=请输入关机时间
+echo %times%
+@schtasks /create /sc once /tn exeshutdowncmd /tr "shutdown /s -t 0" /st %times%  && goto line0 || goto line1
+:line0
+echo 已经成功创建
+schtasks /query /tn exeshutdowncmd 
+goto end
+:line1
+echo 我们将为您清除定时任务
+@schtasks /delete /tn exeshutdowncmd /f
+:end
+/pause
+--------------------------------------------
+
+
+
+
+REG 的命令使用
+　　Reg 对注册表子项信息和注册表项值中的值执行添加、更改、导入、导出以及其他操作。 
+　　reg 命令包括： reg add reg compare reg copy reg delete reg export reg import reg load 
+　　reg query reg restore reg save reg unload 
+　　reg add 将新的子项或项添加到注册表中。 
+　　语法 reg add KeyName [{/v ValueName | /ve}] [/t DataType] [/s Separator] [/d Data] [/f] 
+　　参数 KeyName 
+　　指定要添加的子项或项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分
+　　。省略 \\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 
+　　HKCC。如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　/v ValueName 指定要添加到指定子项下的注册表项名称。 
+　　/ve 指定添加到注册表中的注册表项为空值。 
+　　/t Type 指定注册表项的类型。Type 必须是以下几种类型之一： 
+　　REG_SZ 
+　　REG_MULTI_SZ 
+　　REG_DWORD_BIG_ENDIAN 
+　　REG_DWORD 
+　　REG_BINARY 
+　　REG_DWORD_LITTLE_ENDIAN 
+　　REG_LINK 
+　　REG_FULL_RESOURCE_DESCRIPTOR 
+　　REG_EXPAND_SZ 
+　　/s Separator 当指定了 REG_MULTI_SZ 数据类型并且需要列出多个项时，指定用来分隔数据的多个实例的字符。如果没有指定，将使用默认分隔符“\0”。 
+　　/d Data 指定新注册表项的数据。 
+　　/f 添加注册表项而不要求确认。 
+　　/? 在命令提示符处显示 reg add 的帮助。 
+　　注释 
+　　? 该操作不能添加子树。该版本的 Reg 在添加子项时无需请求确认。 
+　　? 下表列出了 reg add 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　? 对于 REG_EXPAND_SZ 项类型，在 /d 参数内将插入符号 ( ^ ) 与“%”一起使用。 
+　　示例 
+　　要在远程计算机 ABC 上添加 HKLM\Software\MyCo 项，请键入： 
+　　REG ADD \\ABC\HKLM\Software\MyCo 
+　　要将一个注册表项添加到 HKLM\Software\MyCo，选项为值名：Data；类型：REG_BINARY；数值数据：fe340ead；请键入： 
+　　REG ADD HKLM\Software\MyCo /v Data /t REG_BINARY /d fe340ead 
+　　要将一个多值注册表项添加到 HKLM\Software\MyCo，选项为值名：MRU；数据类型：REG_MULTI_SZ；数值数据：fax\0mail\0\0；请键入： 
+　　REG ADD HKLM\Software\MyCo /v MRU /t REG_MULTI_SZ /d fax\0mail\0\0 
+　　要将一个扩展的注册表项添加到 HKLM\Software\MyCo，选项为值名：Path；数据类型：REG_EXPAND_SZ；数值数据：%systemroot%；请键入：
+ 
+　　REG ADD HKLM\Software\MyCo /v Path /t REG_EXPAND_SZ /d ^%systemroot^% 
+　　reg compare 比较指定的注册表子项或项。 
+　　语法 reg compare KeyName1 KeyName2 [{/v ValueName | /ve}] [{/oa | /od | /os | on}] [/s] 
+　　参数 KeyName1 指定要比较的第一个子项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部
+　　分。省略 \\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以
+　　及 HKCC。如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　KeyName2 指定要比较的第二个子项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部
+　　分。省略 \\ComputerName\ 会导致默认对本地计算机的操作。只在 KeyName2 中指定计算机名会导致该操作使用到 KeyName1 中指定的子项的
+　　路径。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC。如果指定了远程计算机，则有效根键是 HKLM 
+　　和 HKU。 
+　　/v ValueName 指定要比较的子项下的值名称。 
+　　/ve 指定只比较值名称为 null 的项。 
+　　[{/oa | /od | /os | on}] 指定如何显示比较操作的结果。默认设置是 /od。下表列出了每一个选项。 
+　　值 描述 
+　　/oa 指定显示所有不同点和匹配点。默认情况下，仅列出不同点。 
+　　/od 指定仅显示不同点。这是默认操作。 
+　　/os 指定仅显示匹配点。默认情况下，仅列出不同点。 
+　　/on 指定不显示任何内容。默认情况下，仅列出不同点。 
+　　/s 递归地比较所有子项和项。 
+　　/? 在命令提示符处显示 reg compare 的帮助。 
+　　注释 
+　　? 下表列出了 reg compare 操作的返回值。 
+　　值 描述 
+　　0 比较成功且结果相同。 
+　　1 比较失败。 
+　　2 比较成功并找到不同点。 
+　　? 下表列出了结果中显示的符号。 
+　　符号 描述 
+　　= KeyName1 数据等于 KeyName2 数据 
+　　< KeyName1 数据小于 KeyName2 数据 
+　　> KeyName1 数据大于 KeyName2 数据 
+　　示例 
+　　要将 MyApp 项下的所有值与 SaveMyApp 项下的所有值进行比较，请键入： 
+　　REG COMPARE HKLM\Software\MyCo\MyApp HKLM\Software\MyCo\SaveMyApp 
+　　要比较 MyCo 项下的 Version 的值和 MyCo1 项下的 Version 的值，请键入： 
+　　REG COMPARE HKLM\Software\MyCo HKLM\Software\MyCo1 /v Version 
+　　要将计算机 ZODIAC 上 HKLM\Software\MyCo 下的所有子项和值与当前计算机上 HKLM\Software\MyCo 下的所有子项和值进行比较，请键入： 
+
+　　REG COMPARE \\ZODIAC\HKLM\Software\MyCo \\。/s 
+　　reg copy 将一个注册表项复制到本地或远程计算机的指定位置。 
+　　语法 reg copy KeyName1 KeyName2 [/s] [/f] 
+　　参数 KeyName1 指定要复制子项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省略 
+　　\\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC。
+　　如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　KeyName2 指定子项目的地的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省略 
+　　\\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC。
+　　如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　/s 复制指定子项下的所有子项和项。 
+　　/f 不要求确认而直接复制子项。 
+　　/? 在命令提示符处显示 reg copy 的帮助。 
+　　注释 
+　　? 在复制子项时 Reg 不请求确认。 
+　　? 下表列出了 reg copy 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要将 MyApp 项下的所有子项和值复制到 SaveMyApp 项，请键入： 
+　　REG COPY HKLM\Software\MyCo\MyApp HKLM\Software\MyCo\SaveMyApp /s 
+　　要将计算机 ZODIAC 上的 MyCo 项下的所有值复制到当前计算机上的 MyCo1 项，请键入： 
+
+　　REG COPY \\ZODIAC\HKLM\Software\MyCo HKLM\Software\MyCo1 
+　　reg delete 
+　　从注册表删除子项或项。 
+　　语法 Reg delete KeyName [{/v ValueName | /ve | /va}] [/f] 
+　　参数 KeyName 
+　　指定要删除的子项或项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分
+　　。省略 \\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 
+　　HKCC。如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　/v ValueName 删除子项下的特定项。如果未指定项，则将删除子项下的所有项和子项。 
+　　/ve 指定只可以删除为空值的项。 
+　　/va 删除指定子项下的所有项。使用本参数不能删除指定子项下的子项。 
+　　/f 无需请求确认而删除现有的注册表子项或项。 
+　　/? 在命令提示符处显示 reg delete 的帮助。 
+　　注释 
+　　? 下表列出了 reg delete 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要删除注册表项 Timeout 以及其所有子项和值，请键入： 
+　　REG DELETE HKLM\Software\MyCo\MyApp\Timeout 
+　　要删除计算机 ZODIAC 上 HKLM\Software\MyCo 下的注册表值 MTU，请键入： 
+　　REG DELETE \\ZODIAC\HKLM\Software\MyCo /v MTU
+　　reg export 
+　　将本地计算机的指定子项、项和值复制到一个文件中，以便传输到其他服务器。 
+　　语法 
+　　Reg export KeyName FileName [/y] 
+　　参数 
+    KeyName 指定子项的完全路径。Export 操作仅可在本地计算机上工作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以
+　　及 HKCC。 
+　　FileName 指定在操作期间创建的文件的名称和路径。该文件必须具有 .reg 扩展名。 
+　　/y 不要求确认即覆盖任何现有的名称为 FileName 的文件。 
+　　/? 在命令提示符处显示 reg export 的帮助。 
+　　注释 
+　　? 下表列出了 reg export 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要将 MyApp 项的所有子项和值的内容导出到文件 AppBkUp.reg，请键入： 
+　　reg export HKLM\Software\MyCo\MyApp AppBkUp.reg 
+
+　　reg import 将包含已导出的注册表子项、项和值的文件的内容复制到本地计算机的注册表中。 
+　　语法 Reg import FileName 
+　　参数 
+　　FileName 指定其内容将复制到本地计算机注册表中的文件的名称和路径。此文件必须使用 reg export 预先创建。 
+　　/? 在命令提示符处显示 reg import 的帮助。 
+　　注释 ? 下表列出了 reg import 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要从名为 AppBkUp.reg 的文件导入注册表项，请键入： 
+　　reg import AppBkUp.reg 
+　　reg load 
+　　将保存的子项和项写回到注册表的不同子项中。与用于进行疑难解答或编辑注册表项的临时文件一起使用。 
+　　语法 reg load KeyName FileName 
+　　参数 
+    KeyName 指定要加载的子项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省
+　　略 \\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC
+　　。如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　FileName 指定要加载的文件的名称和路径。必须使用 .hiv 作为扩展名的 reg save 操作预先创建该文件。 
+　　/? 
+　　在命令提示符处显示 reg load 的帮助。 
+　　注释 
+　　? 下表列出了 reg load 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要将名为 TempHive.hiv 的文件加载到 HKLM\TempHive 项，请键入： 
+　　REG LOAD HKLM\TempHive TempHive.hiv
+
+　　reg quer# 
+　　返回位于注册表中指定的子项下的下一层子项和项的列表。 
+　　语法 reg query KeyName [{/v ValueName | /ve}] [/s] [/se Separator] [/f Data] [{/k | /d}] [/c] [/e] [/t Type] [/z] 
+　　参数 
+　　KeyName 指定子项的完全路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省略 
+　　\\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC。
+　　如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　/v ValueName 指定要查询的注册表值名称。如果省略，则返回 KeyName 的所有值名称。如果还使用了 /f 选项，则此参数的 ValueName 是可选的。 
+　　/ve 查询空白的值名称。 
+　　/s 指定该参数递归查询所有子项和值名称。 
+　　/se Separator 指定单值分隔符，以搜索 REG_MULTI_SZ 类型的值名称。如果没有指定 Separator，则使用“\0”。 
+　　/f Data 指定要搜索的数据或模式。如果字符串包含空格，则使用双引号。如果未指定，则使用通配符 ("*") 作为搜索模式。 
+　　/k 指定只在项名称中搜索。 
+　　/d 指定只在数据中搜索。 
+　　/c 指定查询是区分大小写的。默认情况下，查询是不区分大小写的。 
+　　/e 指定只返回完全匹配项。默认情况下，返回所有匹配项。 
+　　/t Type 指定要搜索的注册表类型。有效的类型包括：REG_SZ、REG_MULTI_SZ、REG_EXPAND_SZ、REG_DWORD、REG_BINARY、REG_NONE。如果未指定，则
+　　搜索所有类型。 
+　　/z 指定在搜索结果中包括注册表类型的数字同等物。 
+　　/? 在命令提示符处显示 reg query 的帮助。 
+　　注释 
+　　? 下表列出了 reg query 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要显示 HKLM\Software\Microsoft\ResKit 项中的名称值 Version 的值，请键入： 
+　　REG QUERY HKLM\Software\Microsoft\ResKit /v Version 
+　　要显示远程计算机 ABC 上的 HKLM\Software\Microsoft\ResKit\Nt\Setup 项下的所有子项和值，请键入： 
+　　REG QUERY \\ABC\HKLM\Software\Microsoft\ResKit\Nt\Setup /s 
+　　要使用“#”作为分隔符显示 REG_MULTI_SZ 类型的所有子项和值，请键入： 
+　　REG QUERY HKLM\Software\Microsoft\ResKit\Nt\Setup /se # 
+　　要显示数据类型 REG_SZ 的 HKLM 根下的“SYSTEM”的完全匹配并且区分大小写的匹配项的项、值和数据，请键入： 
+　　REG QUERY HKLM /f SYSTEM /t REG_SZ /c /e 
+　　要显示数据类型 REG_BINARY 的根键 HKCU 下的数据中的“0F”的匹配项的项、值和数据，请键入。 
+　　REG QUERY HKCU /f 0F /d /t REG_BINARY 
+　　要显示 HKLM\SOFTWARE 下的值名称 null（默认值）的值和数据，请键入： 
+　　REG QUERY HKLM\SOFTWARE /ve 
+
+　　reg restore 
+　　将保存的子项和项写回到注册表。 
+　　语法 Reg restore KeyName FileName 
+　　参数 
+　　KeyName 指定要还原的子项的完整路径。Restore 操作仅在本地计算机上工作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、
+　　HKU 以及 HKCC。 
+　　FileName 指定其内容将写回到注册表中的文件的名称和路径。必须使用 .hiv 作为扩展名的 reg save 操作预先创建该文件。 
+　　/? 在命令提示符处显示 reg restore 的帮助。 
+　　注释 
+　　? 编辑任何注册表项之前，请使用 reg save 操作保存父子项。如果编辑失败，则可以使用 reg restore 操作还原原来的子项。 
+　　? 下表列出了 reg restore 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要将名为 NTRKBkUp.hiv 的文件还原到 HKLM\Software\Microsoft\ResKit 项，并覆盖该项的现有内容，请键入： 
+　　REG RESTORE HKLM\Software\Microsoft\ResKit NTRKBkUp.hiv 
+
+　　reg save 
+　　将指定的子项、项和注册表值的副本保存到指定文件中。 
+　　语法 reg save KeyName FileName [/y] 
+　　参数 
+    KeyName 
+　　指定子项的完全路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省略 
+　　\\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC。
+　　如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　FileName 指定所创建的文件的名称和路径。如果未指定路径，则使用当前路径。 
+　　/y 不要求确认即覆盖任何现有的名称为 FileName 的文件。 
+　　/? 在命令提示符处显示 reg save 的帮助。 
+　　注释 
+　　? 下表列出了 reg save 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　? 编辑任何注册表项之前，请使用 reg save 操作保存父子项。如果编辑失败，则可以使用 reg restore 操作还原原来的子项。 
+　　示例 
+　　要将配置单元 MyApp 作为名为 AppBkUp.hiv 的文件保存到当前文件夹中，请键入： 
+　　REG SAVE HKLM\Software\MyCo\MyApp AppBkUp.hiv 
+
+　　reg unload 
+　　使用 reg load 操作删除已加载的部分注册表。 
+　　语法 reg unload KeyName 
+　　参数 
+　　KeyName 指定要卸载的子项的完整路径。要指定远程计算机，请包括计算机名（以 \\ComputerName\ 格式表示），并将其作为 KeyName 的一部分。省
+　　略 \\ComputerName\ 会导致默认对本地计算机的操作。KeyName 必须包括一个有效的根键。有效根键包括 HKLM、HKCU、HKCR、HKU 以及 HKCC
+　　。如果指定了远程计算机，则有效根键是 HKLM 和 HKU。 
+　　/? 在命令提示符处显示 reg unload 的帮助。 
+　　注释 
+　　? 下表列出了 reg unload 操作的返回值。 
+　　值 描述 
+　　0 成功 
+　　1 失败 
+　　示例 
+　　要卸载 HKLM 中的配置单元 TempHive，请键入： 
+　　REG UNLOAD HKLM\TempHive
+
+
+
+
+
+
+
+
+

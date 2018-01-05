@@ -1,0 +1,23 @@
+TOMCAT 
+
+tomcat是符合java ee标准的最小的web server 它可以完成大部分的小型系统的开发。
+
+配置虚拟目录：
+虚拟目录可以理解为项目保存的路径，而虚拟目录在磁盘上也就是一个文件夹，这个文件夹有一个要求：必需存在一个WEB-INF的目录，里面必需有一个web.xml的文件。
+在<Host>之上添加
+<Context path="/path" docBase="d:\path"/>
+可以添加虚拟目录
+path：表示浏览器上访问的路径
+docBase：表示对应的磁盘目录
+
+之后还需要打开列表功能，需要修改conf/web.xml文件
+<servlet>
+	<init-param>
+	<param-name>listings</param-name>
+	<param-value>true</param-value>
+	</init-param>
+</servlet>
+打开列表功能
+
+当用户访问”http://localhost:8080/path/hello.jsp“的时候，tomcat会将*.jsp文件自动编译成*.java文件，之后编译为.class文件执行
+所有的.java .class文件都放在work目录下

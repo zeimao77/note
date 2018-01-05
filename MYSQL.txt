@@ -1,0 +1,144 @@
+MYSQL
+优化目的
+ 由于数据库timeout产生5xx错误
+ 由于慢查询页面加载慢或不能加载
+ 由于阻塞造成数据无法提交，超时回滚
+优化的方法：
+SQL及索引 > 数据表设计 > 系统配置（打开文件） > 硬件(IO、内存)
+
+SQL优化
+show variables;
+配置项：
+slow_query_log=on
+long_query_time=1
+log_query_not_using_indexes=on
+slow_query_log_file
+
+返回格式：*****************************************************************
+Time                 Id Command    Argument
+# Time: 2017-10-30T07:05:32.455376Z
+# User@Host: abc[abc] @ localhost []  Id:     3
+# Query_time: 2.002709  Lock_time: 0.000000 Rows_sent: 1  Rows_examined: 0
+SET timestamp=1509347132;
+select sleep(2);
+***************************************************************************
+#Time: 时间
+#User@Host: 主机信息
+#Query_tim: 查询时间 lock_time 锁定时间  rows_sent 发送行数 row_examined 扫描行数
+set timestamp 执行时间戳
+select ...  语句内容
+***************************************************************************
+
+explain查询SQL执行计划
+table 显示这一行的数据相关哪张表
+type 连接的类型，从好到差依次：const > eq_reg > ref > range > index > all
+possible_keys 可能应用到的索引，空表示没有
+key 实际使用的索引
+key_len 索引的长度，在不损失精度的情况下，越短越好
+ref 显示索引哪一列被使用了，如果可能的话为常数
+rows MYSQL认为必须检查的用来返回的行数
+extra需要注意返回的值：
+    Using filesort 持到此项，SQL需要优化，SQL需要进行额外步骤实现对返回值的排序，它根据连接类型以及存储顺序键值和匹配条件的全部行的行指针来排序全部行
+    Using temporary 看到此项，SQL需要优化，这时，SQL需要创建临时表来存储结果，通常发生在对不同列进行排序上
+
+count(1) count(*) 包含null
+count(列) 不包含null
+mysql>
+mysql> select * from temp;
++------+
+| id   |
++------+
+| a    |
+| 1    |
+| NULL |
+| a    |
+| c    |
++------+
+5 rows in set (0.00 sec)
+mysql> select count(id),count(1),count(*),count(id="a" or null),count(id="a") from temp;
++-----------+----------+----------+-----------------------+---------------+
+| count(id) | count(1) | count(*) | count(id="a" or null) | count(id="a") |
++-----------+----------+----------+-----------------------+---------------+
+|         4 |        5 |        5 |                     2 |             4 |
++-----------+----------+----------+-----------------------+---------------+
+
+max优化：max排序等添加索引
+
+优化示例：
+mysql> select * from actor;
++----------+------------+
+| actor_id | actor_name |
++----------+------------+
+|        1 | zs         |
+|        2 | ls         |
+|        3 | ww         |
++----------+------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from film;
++---------+-----------+----------+
+| film_id | file_name | actor_id |
++---------+-----------+----------+
+|       1 | abc       |        1 |
+|       2 | bcd       |        2 |
++---------+-----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> explain select actor_name,count(1) from film inner join actor using (actor_id) group by film.actor_id;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                              |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+|  1 | SIMPLE      | film  | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    2 |   100.00 | Using temporary; Using filesort                    |
+|  1 | SIMPLE      | actor | NULL       | ALL  | PRIMARY       | NULL | NULL    | NULL |    3 |    33.33 | Using where; Using join buffer (Block Nested Loop) |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+2 rows in set, 1 warning (0.00 sec)
+
+mysql> select actor_name,count(1) from film inner join actor using (actor_id) group by film.actor_id;
++------------+----------+
+| actor_name | count(1) |
++------------+----------+
+| zs         |        1 |
+| ls         |        1 |
++------------+----------+
+2 rows in set (0.00 sec)
+
+优化方案：
+尽可能减少临时表,排序等工作，添加索引 
+mysql> mysql> create index IND_ACTOR_ID (actor_id);
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> explain select actor_name,a.count from actor inner join (select actor_id,count(1) as count from film group by actor_id) as a using (actor_id);
++----+-------------+------------+------------+-------+---------------+--------------+---------+--------------------+------+----------+-------------+
+| id | select_type | table      | partitions | type  | possible_keys | key          | key_len | ref                | rows | filtered | Extra       |
++----+-------------+------------+------------+-------+---------------+--------------+---------+--------------------+------+----------+-------------+
+|  1 | PRIMARY     | actor      | NULL       | ALL   | PRIMARY       | NULL         | NULL    | NULL               |    3 |   100.00 | NULL        |
+|  1 | PRIMARY     | <derived2> | NULL       | ref   | <auto_key0>   | <auto_key0>  | 2       | tem.actor.actor_id |    2 |   100.00 | NULL        |
+|  2 | DERIVED     | film       | NULL       | index | IND_ACTOR_ID  | IND_ACTOR_ID | 2       | NULL               |    2 |   100.00 | Using index |
++----+-------------+------------+------------+-------+---------------+--------------+---------+--------------------+------+----------+-------------+
+3 rows in set, 1 warning (0.00 sec)
+
+limit优化
+limit时常伴随着排序操作，所以应该尽量利用索引进行排序 
+好处：可以尽可能少的扫描行，排序可以减少IO
+mysql> explain select * from actor order by actor_id limit 1,1;
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------+
+| id | select_type | table | partitions | type  | possible_keys | key     | key_len | ref  | rows | filtered | Extra |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------+
+|  1 | SIMPLE      | actor | NULL       | index | NULL          | PRIMARY | 1       | NULL |    2 |   100.00 | NULL  |
++----+-------------+-------+------------+-------+---------------+---------+---------+------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> explain select * from actor order by actor_name limit 1,1;
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------+
+| id | select_type | table | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra          |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------+
+|  1 | SIMPLE      | actor | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    3 |   100.00 | Using filesort |
++----+-------------+-------+------------+------+---------------+------+---------+------+------+----------+----------------+
+1 row in set, 1 warning (0.00 sec)
+如果允许的话可以利用其它条件where进一步减少扫描条数
+
+如何选择合适的索引列
+ 1.在where从句 group by 从句 order by 从句 on从句中出现的列
+ 2.索引字段的越小越好
+ 3.离散程度大的列放到联合索引的前面

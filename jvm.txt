@@ -1,0 +1,413 @@
+﻿JVM java Virtual Machine
+虚拟机：
+ 指通过软件模拟的具有完整硬件系统功能的、运行在一个完全隔离环境中的完整计算机系统
+VMWare或Visual Box都是软件模拟物理CPU的指令集,属性系统虚拟机
+JVM是使用软件模拟JAVA字节码的指令集，进程虚拟机
+使用最广泛的JVM是HotSpot,是sun收购而来。其它还虚拟机还有JRockit VM,两个虚拟机在java8中进行整合。还有Apache Harmony 。
+java虚拟机与java没有什么关系，java虚拟机一般需要经过tck认证。
+
+未来JVM发展：
+模块化
+多语言混合编程
+多核心并行
+丰富语法
+64位机
+  64位压缩指针命令：-XX +UseCompressedOops
+
+JAVA-规范
+java语言规范：
+语法
+变量
+类型
+文法
+JVM规范
+
+class文件类型
+运行时数据
+帧栈
+虚拟机的启动
+虚拟机的指令集
+
+JAVA程序的编译：
+源代码
+词法分析：将原代码分析成token流，逐个字节读取源码，找出这些字节中的语法关键词，如package,public,class,if,for,while,int,+,-,*,/,=,变量名,字面值......并找出一些规范化的token流。
+语法分析：检查这些关键词的组合是否符合java语言规范，如if后写布尔表达式，private的调用是否符合规范，return返回是否符合方法签名是...
+语义分析器:复杂语法简化，删除无效代码，添加默认的构造，检查变量在使用前是否初始化，常量折叠【几个字符串的合并在此阶段就已经合并完成】，语法糖还原，受检查异常是否都已经做处理
+生成字节码
+
+JAVA虚拟机的启动：
+1.java命令启动java虚拟机
+2.装载jvm.cfg配置文件
+3.根据配置文件寻找JVM.dll
+4.初始化JVM(找取类接口等)
+5.找到Main方法
+
+JAVA虚拟机由classLoader子系统装载类
+JAVA内存分
+方法区：方法区装载类信息，通常与永久区关联，保存一些相对稳定的数据，在热加载中修改
+JAVA堆：存储对象，所有线程共享堆，采用分代GC【eden(新生对象)|S0|S1|tenured(老年代)】
+JAVA栈：存储参数与局部变量，相对静态方法，在实例方法的调用时，会多传递一个this，栈中数据自动回收
+本地方法栈：
+JAVA内存可见性：指在一个线程修改后，其它线程可以立即被同步
+保证可见性的方法：
+1.volatile
+2.synchronized（在unlock之前，写变量值回主存）
+3.final(一量初始化完成，其他线程就可见)
+
+JAVA虚拟机在本地线程内，操作都是有序的
+而在线程外观察，操作都是无序的。（指令重排或主内存同步延时）
+对于指令重排有基本原则：
+程序顺序原则：一个线程内保证语义的串行性
+volatile规则：volatile变量的写，先发生于读
+锁规则：解锁必然发生在随便的加锁前
+传递性：A等于B，B先于C，那么A必然先于C
+线程的start方法先于它的每一个动作
+线程的所有操作先于线程的终结（Thread.join()）
+线程的中断选于被中断线程的代码
+对象的构造函数执行结束先于finalize()方法
+关于解释运行：解释执行以解释方式运行字节码，读一句执行一句
+关于编译支行：编译后性能有数量级的提升 
+
+常见的汇编指令有：
+1.数据传送指令：mov,pop
+2.算术运算指令：add,inc
+3.逻辑运算指令：shl,and
+4.串指令：
+5.程序转换指令：jmp,jcc...,ret
+
+JVM指令：
+java的所有指令都采用八位二进制描述，因此JAVA的指令总数不超过255个
+1.数据交换指令：iload,istore,lload,lstore,fload,fstore,dload,dstore,ldc
+2.函数调用指令：多指令函数调用指令：invokevirtual,invokeinterface,invodespecial,invodestatic,return
+jvm没有物理寄存器，所以用操作数栈和PC寄存器来代替
+3.运算指令集：iadd,isub,fadd,ddiv
+4.控制转移指令：switch,if...else...,for...
+5.对象创建与类型转换指令
+
+
+JVM参数配置
+-verbose:gc
+-XX:+PrintGC  -打印简要信息
+-[GC 4790K->374K(15872K),0.0001606 secs]
+-[GC 清理前->清理后(总大小),所用时间]
+-XX:+PrintGCDetails    -打印GC详细信息
+-XX:+PrintGCTimeStamps    -打印GC发生的时间戳
+[GC[DefNew:4416K->0K(4928K),0.0001891 sec]4790K->374(15872K),0.0002232 secs]
+[GC[新生代：清理前->清理后(总大小)，所用时间]...]
+[Times:user=0.00 sys=0.00,real=0.00 secs]
+-XX:+PrintGCDetails
+-Heap
+--区域 总大小 使用率[起始地址边界，已申请地址边界，最大可申请地址边界]
+-def new generation 新生带
+eden space 对象出生的地方
+from space 幸存代【s0】
+to space 【s1】
+tenured generation 老年代
+the space 当前使用
+compacting perm gen total
+the space
+ro space -共享只读区
+rw space -共享可读写区
+-Xloggc:log/gc.log	-重定向gc输出
+-XX:+PrintHeapAtGC	-每一次GC后，都打印堆信息
+-XX:+TraceClassLoading	-监控类的加载信息
+-XX:+PrintClassHistogram -打印类的信息（Ctrl+Break），分别显示：序号，实例数量，总大小，类型
+
+堆分配
+-Xmx -最大堆分配【-Xmx20m】
+-Xms -最小堆分配
+-Xmn -设置新生代
+-XX:NewRatio -设置新生代：用比值设定 值（4）=老年代（1）/新生代（4），表示年轻代占堆的1/5
+-XX:SurvivorRatio -设置Survivor区和eden的比 
+-XX:+HeapDumpOnOutOfMemoryError -OOM时导出堆到文件
+-XX:+HeapDumpPath --导出OOM路径
+-XX:OnOutOfMemoryError -在OOM时，执行某个脚本("-XX:OnOutOfMemoryError=D:/tools/jdk1.8.121/bin/printstack.bat %p")
+官方推荐新生代占堆的3/8,幸存代占新生代的1/10
+
+永久区配置
+-XX:PermSize -永久区初始空间
+-XX:MaxPermSize 
+
+Garbage Collection
+GC的对象是堆空间和永久区
+根：
+栈中引用的对象，方法区中静态成员或者常量引用的对象（全局对象）,JNI方法栈中引用对象
+对象对于GC的对象分类
+可达性：从根节点可以触及到这个对象
+可复活：一旦所有引用被释放，就是可复活状态，因为在finalize()中可能复活对象
+不可达：在finalize()后可能会进入不可达的状态，不可以复活，可以回收
+GC回收算法：
+1.引用计数法
+-引用和支引用伴随加减法，影响性能
+-很难处理循环引用
+2.标记清除算法
+-可达性分析标记
+-清除垃圾
+3.标记-压缩
+适合用于存活对象比较多的场合，
+-可达性分析标记
+-将所有存活的对象压缩到内存的一端，之后，清理边界外的所有空间
+4.标记-复制
+将内存空间分成两块，每次只使用其中一块，在垃圾回收时，将存活对象复制到另一块内存中，而后清理垃圾内存，而后交换进行
+因此它浪费空间较大，不适合存活对象较多的场合，但较清除算法，复制算法相对高效
+因此扩展出S0,S1，老年代空间思想，将大对象复制到老年代，小对象在S0,S1之间复制交换使用,分代思相正由此而来
+Stop-The-World
+java中一种全局暂停的现象
+全局停顿，所有JAVA代码停止，native代码可以执行，但不可以与JVM交互
+多半由于GC引起
+    Dump线程 死锁检查 堆Dump
+GC时为什么会有全局停顿呢？在GC运行清理垃圾时，不停的有垃圾产生，永远清理不完，会引发全局停顿
+
+GC参数
+-串行回收器
+最古老，最稳定，效率高的回收器
+-XX:+UseSerialGC -新生代、老年代使用串行回收，新生代复制算法，老年代使用标记-压缩算法
+一旦GC线程启动开始，所有应用程序线程暂停，GC停止后应用程序继续执行
+-并行回收器
+-XX:+UseParNewGC
+新生代并行
+老年代串行
+多线程，需要多核支持
+-XX:ParallelGCThreads 限制线程数量 
+一旦GC线程启动开始，所有应用程序线程暂停，不过会启动多个线程回收，GC停止后应用程序继续执行
+Parallel收集器
+类似ParNew 新生代复制算法 老年代标记-压缩算法
+-XX:+UseParallelGC 使用Paraller收集器+老年代串行
+-XX:+UseParallelOldGC 使用Paraller收集器+并行老年代
+-XX:MaxGCPauseMills 最大停顿时间，GC尽量保证回收时间不超过设定值
+-XX:GCTimeRatio 垃圾收集时间占总时间的比 默认最大允许1%时间做GC 
+GC的执行频率和GC每次执行时间是相矛盾的，停顿时间和吞吐量不可以同时调优
+CMS收集器 Concurrent Mark Sweep并发标记清除
+标记-清除算法
+老年代收集器，新生代使用ParNew
+-XX:+UseConcMarkSweepGC
+通过了较复杂的算法尽可能的减少了停顿的时间
+会影响系统整体吞吐量和性能
+清理不彻底
+因为和用户线程一起运行，不能在空间快满时再清理
+-XX:+GMSInitiatingOccupancyFraction设置触发GC的阈值
+-XX:+UseCMSCompactAtFullCollection Full GC后，进行一次整理，整个过程是独占的，会引起长时间停顿
+-XX:+CMSFullGCsBeforeCompaction 设置进行几次Full GC后，进行一次碎片整理
+-XX：ParallelCMSThreads设置CMS的线程数量 
+
+class装载验证流程：
+class装载验证流程是什么样的
+什么是类装载器
+JDK中classloader默认设计模式
+打破常规模式
+热替换
+
+class装载验证
+加载 链接 初始化
+加载：装载类的第一个阶段，在此阶段取得类的二进制流，转为方法区的数据结构，在JAVA堆中生成对应的java.lang.Class对象
+链接-验证：保证Class流的格式是正确的 文件格式验证 -魔数是否正常，版本号是否正常  -元数据验证 是否有父类 继承了final类  非抽象类实现了所有的抽象方法  -字节码验证：运行检查 栈数据类型和操作数据参数吻合 跳转指令指定是否合理。 -符号引用验证：常量池中描述类是否存在 访问的方法或字段是否存在有足够的权限。
+链接-准备：分配内存，并为类设置初始值（方法区中）
+链接-解析：符号引用(字符串引用不定被加载)替换为直接引用（指针）
+初始化 执行构造器 对static进行赋值  静态代码块加载 子类构造前保证父类的构造方法 构造方法都是线程安全的
+
+ClassLoader是一个抽象类
+ClassLoader的实例将读入JAVA字节码将类装载到JVM中
+ClassLoader可定制，满足不同的字节码流的获取方式
+ClassLoader负责类装载过程中的加载阶段
+ClassLoader的重要方法
+public Class<?> loadClass(String name) throw ClassNotFoundException  --载入并返回一个Class
+protected final Class<?> defineClass(byte[] b,int off,int len)  --定义一个类，不公开调用
+protected Class<?> findClass(String name) throws ClassNotFoundException --loadClass回调该方法，自定义ClassLoader的推荐做法
+protected final Class<?> findLoadClass(String name) --查找已经被加载的类
+JDK中ClassLoader默认设计模式
+ BootStrap ClassLoader (启动ClassLoader)
+ Extension ClassLoader (扩展ClassLoader)
+ App ClassLoader (应用ClassLoader/系统ClassLoader)
+ Custom ClassLoader (自定义ClassLoader)
+ 每个ClassLoader都有一个Parent作为父亲 BootStrap Classloader除外
+ 自底向上检查是否已经加载  自顶向下尝试加载类
+
+|----------------------------------------------------------------------------------|
+|	ClassLoader Architecture						   |
+
+|       [Bootstrap ClassLoader]  -->>rt.jar  /-Xbootclasspath	                   |
+
+|	[Extension ClassLoader]  -->>%JAVA_HOxazscxDVwfME%/lib/ext/*.jar           |
+
+|	[App ClassLoader]        -->>Classpath                                     |
+
+|	[Custom ClassLoader]                                                       |
+
+-----------------------------------------------------------------------------------|
+如何让BootStrapClassloader能够读取下层Classloder的数据呢，所以在此提出了上下文的概念
+Thread.setContextClassLoader()
+上下文加载器  是一个角色  用以解决顶层ClassLoader无法访问底层ClassLoader的类的问题
+基本思想是，在顶层ClassLoader中，传入底层ClassLoader的实例
+双亲模式的是默认的模式 但不是必需的 TOMCAT的WebappClassLoader就会加载自己的Class,找不到再委托parent OSGI的ClassLoader形成网状，根据需要自由加载
+
+我们可以使用javap指令将.class文件反编译成java指令代码，功能类型于反汇编
+javap -verbose <file_name>
+jps -列出java进程，类似于ps命令
+参数 -q 可以指定jps只输出进程ID,不输出类的短名称
+参数 -m 可以用于输出传递给java进程（主函数）的参数
+参数 -l 可以用于输出主函数的完事路径
+参数 -v 可以显示传递给JVM的参数
+
+jinfo  -可以用来查看正在运行的JAVA应用程序的扩展参数，甚至支持在运行时，修改部分参数
+ -flag <name> 打印指定JVM的参数值
+ -flag [+|-] <name> 设置指定JVM参数的布尔值
+ -flag <name> = <value> 设置指定JVM参数的值
+
+jmap 生成java应用程序的堆快照和对象的统计信息
+jstack 打印线程jump 
+ -l 打印锁信息
+ -m 打印java和native的帧信息
+ -F 强制dump,当jstack没有响应时使用
+
+ jconsole 图形化工具 -可以查看JAVA应用程序的支行概况，监控堆信息，永久区使用情况，类加载情况
+
+ 锁：
+ 线程安全
+ 对象头Mark Word 对象的头标记，32位
+  描述对象的Hash 、锁信息 、垃圾回收标记、 年龄
+  指向锁记录的指针
+  指向monitor的指针
+  GC标记
+  偏向锁线程ID
+  大部分情况下没有竞争，所以可以通过偏向来提高性能
+  所谓偏向，即锁会偏向于当前已经占有锁的线程
+  将对象的Mark的标记设置为偏向，并将线程ID写入对象头Mark
+  只要没有竞争，获得偏向锁的线程，在将来进入同步块，不需要做同步
+  当其他线程请求相同的锁时，偏向模式结束
+  -XX:+UseBiasedLocking  -默认启用 -XX:BiasedLockingStartupDelay=0  立即启用偏向锁  -XX：-UseBiasedLocking 不启用偏向锁
+  在竞争激烈的场合，偏向反而会增加系统负担
+
+轻量级锁
+ BasicObjectLock -嵌入在线程栈中的对象
+ 普通的锁处理性能不够理想，轻量级锁是一种快速的锁定方法
+ 如果对象没有被锁定： 将对象头的Mark指针保存到锁对象中 ，将对象头设置为指向锁的指针（在线程栈空间中）
+ 如果轻量级锁失败，则表示存在竞争，将会升级为普通锁
+ 在没有锁竞争的前提下，减少传统锁使用OS互斥量产生的性能损耗，在竞争激烈时，轻量级锁会多做很多额外操作，导致性能下降
+
+自旋锁
+ 在竞争存在时，如果线程可以很快获得锁，那么可以不在OS层挂起线程，让线程做几个空操作（自旋）
+ 如果同步块很长，自旋失败，会降低系统性能，如果同步块很短，自旋成功，节省线程挂起切换时间，提升系统性能
+ 内置JVM中的获取锁的优化方法和获取锁的步骤
+ 偏向锁可用会先尝试偏向锁
+ 轻量级锁可用会先尝试轻量级锁
+ 以上都失败，尝试自旋锁
+ 再失败，尝试普通锁，使用OS互斥量在操作系统层挂起
+
+ 锁优化：
+ 1.减少锁的持有时间
+ 2.减少锁的粒度
+   --将大对象拆分成小对象，大大增加并行度，降低锁竞争
+   --偏向锁，轻量级锁成功率提高 
+   ConcurrentHashMap
+ 3.锁分离  读写分离   在读多写少的情况下可以提高性能
+   写的时候其它线程不可读写
+   读的时候其它线程可读
+ 4.锁粗化
+   在通常情况下，为了保证多线程间的有效并发，会要求每个线程持有锁的时间尽可能短，即在完成一个公共资源后，应该立即释放锁。只有这样，等待在这个锁上的其他线程才能尽早地获得资源执行任务。但是，凡事都有度，如果对同一锁不停的进行请求，同步和释放，其本身也会消耗资源，反而不利于性能的优化，所以这时反而会增加锁的持有时间
+ 5.锁消除
+  在编译时，如果发现不可能被共享的对象，则可以消除这些对象的锁操作
+ 6.无锁
+  无锁的实现方式： CAS(compare and swap) 非阻塞的同步 CAS(V[要更新的变量],E[期望的值],N[新值]) 如果V的值等于E的值，则说明V的值没有被其它线程所修改，所以说明没有受到其它线程的影响，在应用层面判断多线程的干扰，如果有干扰，则通知线程重试 例：java.util.concurrent.atomic.AtomicInteger
+
+
+class文件结构
+|---------------------------------------------------------------------------------------|
+|类型           |名称               |数量                   |说明                       |
+|---------------|-------------------|-----------------------|---------------------------|
+|u4             |magic              |1                      |魔数[CA FE BA BE]          |
+|u2             |minor_version      |1                      |小版本(JDK版本)            |
+|u2             |major_version      |1                      |主版本                     |
+|u2             |contant_pool_count |1                      |常量池的个数               |
+|cp_info        |contant_pool       |contant_pool_count-1   |常量池的常量值             |
+|u2             |access_flag        |1                      |类的标识，类的修饰         |
+|u2             |this_calss         |1                      |当前类                     |
+|u2             |super_class        |1                      |超类                       |
+|u2             |interfaces_count   |1                      |接口数量                   |
+|u2             |interfaces         |interface_count        |接口                       |
+|u2             |fields_count       |1                      |字段数量                   |
+|field_info     |fields             |fields_count           |字段                       |
+|u2             |method_count       |1                      |                           |
+|u2             |attribute_count    |1                      |属性数量                   |
+|attribute_info |attributes         |attribute_count        |属性信息                   |
+|---------------------------------------------------------------------------------------|
+
+cp_info：
+  --constant_utf8                utf-8编码的Unicode字符串        存储：-tag 1 -length u2 -byte[len]
+  --constant_Integer             整数                            存储：-tag 3 -byte u4
+  --constant_Float               单精度                          存储：-tag 4
+  --constant_Long  	             长整形                          存储：-tag 5
+  --constant_Double              双精度浮点数                    存储：-tag 6
+  --constant_Class               对一个类或接口的符号引用        存储：-tag 7 -name_index u2
+  --constant_String              字符串                          存储：-tag 8 -string_index u2
+  --constant_Fieldref            对一个字段的符号引用            存储：-tag 9 -class_index u2 -name_and_type_index u2
+  --constant_Methodref           对一个类中方法的符号引用        存储：-tag 10 -class_index u2 -name_and_type_index u2
+  --constant_InterfaceMethodref  对一个接口中方法的符号引用      存储：-tag 11 -class_index u2 -name_and_type_index u2
+  --constant_NameAndType         对一个字段或方法的部分符号引用  存储：-tag 12 -name_index u2 -descriptor_index u2
+
+access_flag:
+   Flag Name       Value        Interpretation
+  --acc_public     0x0001       public
+  --acc_final      0x0010       final
+  --acc_super      0x0020       是否允许使用invokerspecial指令，JDK1.2后，为true
+  --acc_interface  0x0200       是否是接口
+  --acc_abstract   0x0400       抽象类
+  --acc_synthetic  0x1000       该类不是由用户代码生成运行时生成的，没有源代码
+  --acc_annotation 0x2000       是否为注解
+  --acc_enum       0x4000       是否为枚举
+
+this_class ,super_class:
+    指向常量池的Class
+
+interfaces:
+    每个interface是指向constant_class的索引
+
+field:
+  --access_flag u2
+  --name_index u2
+  --descriptor_index u2
+  --attributes_count u2
+  --attribute_info attributes[attributes_count]
+
+access_flag:
+   Flag Name       Value        Interpretation
+ --acc_public      0x0001       public
+ --acc_private     0x0002       private
+ --acc_protected   0x0004       protected
+ --acc_static      0x0008       static
+ --acc_final       0x0010       final
+ --acc_volatile    0x0040       volatile
+ --acc_transient   0x0080       transient
+ --acc_synthetic   0x1000       synthetic:没有源代码，编译器生成
+ --acc_enum        0x4000       枚举
+
+name_index u2  常量池引用，表示字段的名字
+descriptor_index 表示字段的类型
+B byte      Z boolean
+C char      V void
+D double    L Object Ljava/lang/Object
+F float     [ Array  Ljava/lang/String = String[]
+I int       J long
+S short
+
+method_info
+  -access_flag u2
+  -name_index u2
+  -descriptor_index u2
+  -attributes_count u2
+  -attribute_info attributes[attributes_count]
+
+access_flag:
+   Flag Name         Value        Interpretation
+ --acc_public        0x0001       public
+ --acc_private       0x0002       private
+ --acc_protected     0x0004       protected
+ --acc_static        0x0008       static
+ --acc_final         0x0010       final
+ --acc_synchronized  0x0020       synchronized
+ --acc_bridge        0x0040       编译器产生 桥接方法
+ --acc_varargs       0x0080       可变参数
+ --acc_native        0x0100       native
+ --acc_abstract      0x0400       abstract
+ --acc_strict        0x0800       structfp
+ --acc_synthetic     0x1000       不在源代码中，由编译器产生
+

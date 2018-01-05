@@ -1,0 +1,118 @@
+GIT常用命令----------------------------------------------
+
+安装git[CentOS]
+yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel
+yum install git-core -y
+git --version
+
+git init
+git add <file>
+git commit -m "str"
+git log --pretty=oneline
+git log --oneline 查看历史简洁的版本
+git log --graph选项 查看历史什么时候出现了公支、合并
+git log --reverse选项 逆向显示所有日志
+git log --author=linus --oneline -5 可以查找指定用户提交
+可以使用--subce和--before,--util和--after命令查看范围内的提交 --no-merges选项可以隐藏合并提交
+git log --before={3.weeks.ago} --after={2014-04-18} --no-merges 
+git reset --hard=commit_id
+GIT的版本里存放了很多东西，其中最重要的称为stage的暂存区，还有GIT为我们自动创建了一个分支master,以及指向master的一个指针HEAD
+git reflog
+git status
+GIT保存的修改还不是文件:如果我们在add命令之后不提交 修改文件之后再提交  提交的将是暂存区的文件 而不是刚修改的文件 
+sdfdsfgit checkout -- <file>命令有两种情况：
+	一种是文件自修改后还没有被放到暂存区，现在，撤销修改将会使文件回到版本库的状态
+	一种是文件已经添加到暂存区，而文件又作了修改，那么撤销就回到暂存区的状态
+git rm 用于删除一个文件
+
+git remote add origin git@github.com zeimao77/repo-name.git将当前项目关联到github上
+origin是远程库的名字，也是git默认的叫法
+
+git push命令可以把当前分支master推送到远程
+git push -u origin master
+由于远程库是空的，我们在第一次推送的时候，加上-u参数，GIT不但会把本地的master分支内容推送到远程，还会把本地的master与远程master分支关联起来，在以后的推送或者摘取时可以简化命令。
+git push origin master
+
+git clone git@github.com:zeimao77/repo-name.git
+github给出的地址有多个，因为GIT支持多种协议，git://使用ssh 但也可以使用https等其它协议
+
+git checkout -b dev 创建并切换分支
+git checkout命令加上-b参数表示创建并切换，相当于如下两条命令
+git branch dev 创建分支
+git checkout dev  切换分支
+git branch 查看分支，当前分支用*标示
+git merge命令用于合并指定分支到当前分支 
+git branch -d dev 删除分支
+
+git在两个分支对同一文件修改之后合并会产生冲突，在此必需手动修改之后再提交，git status会选择我们冲突的文件
+我们可以使用带参数的git log可以看到分支的合并情况
+git log --graph --pretty=oneline --abbrev-commit
+
+通常，合并分支时，GIT会使用Fast forward模式，但这种模式下，删除分支后，会丢掉分支信息
+所以我们需要强制禁用Fast forward模式，命令如下：
+git merge --no-ff -m "merge with no-ff" dev 
+在命令合并时，会创建一个新的提交 -m 参数，用于commit描述
+
+分支策略：
+在实际开发过程中，我们应该按照几个基本原则进行分支管理：
+首先，master分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活
+干活都是在dev分支上的，也就是说dev分支是不稳定的，到需要发布的时候，再把dev分支合并到master分支上去，再发布版本
+小伙伴都在dev分支上干活，每个人都有自己的分支，需要时合并到dev分支上去就可以了
+
+git tag <tagname> [commit_id] 版本标签，在发布版本时，可以通过打标签的方式给某一提交标记版本
+在切换分支之使用git tag <name> 可以为当前分支版本打新标签
+GIT还支持带有说明的标签，用-a指定标签名，-m指定说明文字，-s用私钥签名一个标签;
+git tag 查看标签，但显示顺序是按字母排序的
+git show <tagname> 查看标签信息
+如果标签打错了，git tag -d <tagname> 可以删除标签
+创建的标签只会存储在本地，不会自动推送到远程，所以打错的标签可以在本地安全删除。如果要推送某个标签到远程，使用命令git push origin <tagname>
+如果需要一次性推送所有标签，可以使用git push origin --tags
+如果标签已经推送到了远程，要删除标签会稍麻烦，得先从本地删除，然后再删除远程，其格式如下：
+git push origin:refs/tags/<tagname>
+
+在有些时候，我们有些文件需要忽略同步，我们可以在GIT工作区的根目录下创建一个特殊的.gitignore文件，然后把要忽略的文件名填进去，GIT就会自动地忽略这些文件
+在windows进行Python开发时，window会生成垃圾，可以配置过滤垃圾
+#Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+如果配置了忽略，再使用git add 命令不添加不了的,可以使用git add -f <file>来强制添加到GIT
+或者可能是.gitignore写得有问题，规则写错了，我们可以用git check-ignore命令来检查
+git check-ignore -v <file>
+GIT会告诉我们，是.gitignore的哪一行规则忽略了文件
+
+git配置，显示不同颜色，会让命令输出更醒目
+git config --global color.ui true 
+
+
+github远程仓库
+添加一个新的远程仓库：git remote add [shortname] [url]
+git仓库与github之间传输是通过ssh加密的，需要配置验证信息：
+ssh-keygen -t rsa -C "youremail@example.com"
+命令会要求确认路径并输入密码，成功后会在~/生成.ssh文件夹，进去打开id_rsa.pub复制里面的key -->> 回到github 进入account-Settings帐户设置，选择ssh and gpg keys 添加一个新的ssh key。这样github的配置就好了，我们可以使用命令：
+ssh -T git@github.com 测试是否成功
+git remote 查看当前有哪些远程仓库
+
+提取远程仓库：
+git fetch 从远程仓库下载新分支与数据
+git merge 从远端仓库提取数据并尝试合并到当前分支
+
+搭建GIT服务器
+1.安装好GIT之后
+2.groupadd git ; adduser git -g git
+3.收集所有需要登录的用户公钥，公钥位于id_rsa.pub文件中，把我们的公钥引入到/home/git/.ssh.authorized_key文件里，一行一个，如果不存在则创建
+cd /home/git/ ; mkdir .ssh ; chmod 700 .ssh ; touch .ssh/authorized_keys ; chmod 600 .ssh/authorized_keys
+4.初始化GIT仓库
+cd /home ; mkdir gitrepo ; chown git:git gitrepo/ ; cd gitrepo ; git init --bare runoob.git
+5.克隆仓库
+git clone git@192.168.1.1:/home/gitrepo/runoob.git
+我们还可以通过禁用git用户通过shell登录，可以通过编辑/etc/passwd文件
+git:x:503:503::home/git:/bin/bash 改为： git:x:503:503::/home/git:/sbin/nologin
+
+git命令别名配置
+git config --global alias.st status ==>> git st = git status
+--global参数是全局参数，也就是这些命令在这台电脑所有GIT仓库下都可用
+仓库的的配置文件：.git/config文件中
+用户的配置文件放在用户主目录下的一个隐藏文件.gitconfig中
+
+

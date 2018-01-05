@@ -1,0 +1,171 @@
+redis支持五种数据类型
+字符串　String
+字符串列表  list
+有序字符串集合  zset
+哈希  hash
+字符串集合 set
+
+字符串
+ 二进制安全的，存入和获取的数据相同
+ Value最多可以容纳的数据长度为512M
+
+存储String的常用命令
+ set <key> <value>  保存
+ get <key>  取值  返回（nil)表示不存在
+ getset <key> <value> 先获取输出再修改
+ del <key>  删除
+
+ incr <key>  如果数据为数，将递增1，如果不能转成整形，将报错， 如果不存在将新建
+ decr <key>  如果数据为数，将递减1，如果不能转成整形，将报错， 如果不存在将新建
+ incrby <key> <temp>  将数据加temp
+ decrby <key> <temp>  将数据减temp
+ append <key> <tempstr>  在数据串后追加，返回追加后的长度
+
+Hash
+ String key和String Value的map容器
+ 每个Hash可以存储4294967295个键值对
+
+常用命令
+hset <key> <map-key> <map-value>
+hmset <key> <map-key1> <map-value1> <map-key2> <map-value2>
+hget <key> <map-key>
+hmget <key> <map-key1> <map-key2>
+hgetall <key>
+hdel <key> <map-key1>
+del <key>
+
+hincreby <key> <map-key> <temp>
+hexists <key> <map-key>  判断属性是否存在
+hlen <key>  取属性的长度
+hkeys <key> 取所有属性
+hvals <key> 取所有值
+
+List
+ ArrayList使用数组方式
+ LinkedList双向链表
+
+常用命令
+ lpush <list-name> 值列表  从左边插入
+ rpush <list-name> 值列表  从右边插入
+ lrange <list-name>  start end 查看列表-2表示倒数第二个
+ lpop 左边弹出，如果存在
+ rpop 右边弹出，如果存在
+ llen <list-name>
+ lpushx <list-name> 值列表 当指定key存在时左边插入，不存在不执行
+ rpushx <list-name> 值列表
+ lrem <list-name> [-]<count> <temp>  移除count个temp count为负时从后朝前删 0表示删除所有temp
+ lset <list-name> [index] temp 设置index的值
+ linsert <list-name> before <value> <temp> 在第一个value之前插入temp
+ linsert <list-name> after <value> <temp> 在第一个value之后插入temp
+ rpoplpush <list-name1> <list-name2> 将list-name1里最后元素pop放入list-name2的头
+
+Set
+ 和List类型不同的是，Set集合中允许出现重复的元素
+ Set可包含最大元素数量4294967295
+
+常用命令
+ sadd <set-name> <值列表>
+ srem <set-name> <值列表>
+ smembers <set-name> 查看值列表
+ sismember <set-name> <value> 查找value值
+ sdiff <set-name1> <set-name2> 查找name1存在而在name2中不存在的值
+ sinter <set-name1> <set-name2> 查找name1存在而name2中也存在的值
+ suniion <set-name1> <set-name2> 查找并集
+ scard <set-name> 查看数量
+ srandmember <set-name> 随机返回
+ sdiffstore <set-name1> <set-name2> <set-name3> 将sdiff <set-name2> <set-name3> 的值入到set-name1
+ sinterstore <set-name1> <set-name2> <set-name3>
+ sunionstore <set-name1> <set-name2> <set-name3>
+
+Sorted-Set
+ Sorted-Set成员在集合中的位置是有序的
+
+常用命令
+zadd <key> <score1> <value1> <score2> <value2> ...
+zscore <key> <value> 查看分数
+zcard <key> 成员数量
+zrem <key> <value1> <value2> ... 删除成员
+zrange <key> <index-start> <index-end> 查看成员
+zrange <key> <index-start> <index-end> withscores 查看成员（正序）
+zrevrange <key> <index-start> <index-end> withscores 查看成员（倒序）
+zremrangebyrank <key> <index-start> <index-end> 删除
+zremrangebyscore <key> <start-score> <end-score>
+zrangebyscore <key> <start-score> <end-score>
+zrangebyscore <key> <start-score> <end-score> withscores limit <index-start> <index-end>
+zincrby mysort <add-score> 给指定成员加数
+zcount <key> <start-score> <end-score>
+
+key的通用操作
+keys *  获取所有key
+keys m? m开头
+del <key1> <key2> ...
+exists <key> 查看是否存在
+rename <old-key> <new-key>
+expire <key> <expired-second> 过期时间，单位秒
+ttl <key> 查看离过期还有多长时间
+type <key>　查看类型
+
+reids支持最多十六个数据库（0-15）
+flushall 清空数据库
+select <database-index>
+move <key> <database-index> 移动key到database-index数据库
+
+支持事务
+mutil 开户一个事务
+exec  提交一个事务
+discard  回滚一个事务
+
+redis持久化-两种方式
+RDB方式
+ 默认支持：在指定的时间间隔将数据以快照方式写到硬盘
+ 容灾备份常用方式
+配置：
+save num1 num2 第num1秒至少有num2个key发生变化写一次
+dbfilename dump.rdb 文件名
+dir ./ 文件路径
+AOF方式
+ 以日志的方式记录服务器所执行的每个操作
+可以放弃持久化，将redis当作缓存来用
+appendonly no aof开关 仅使用rdb方式
+appendfilename "appendonly.aof" 文件名
+appendfsync always 每次修改同步
+appendfsync everysec 每秒同步
+appendfsync no 不同步
+
+
+import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
+/**
+ * Created by zeimao77 on 2017/10/29.
+ */
+public class JedisDemo1 {
+
+    @Test
+    public void test1(){
+        Jedis jedis = new Jedis("192.168.1.102",6379);
+        jedis.auth("123");
+        jedis.set("name","zhangsan");
+        System.out.println(jedis.get("name"));
+        jedis.close();
+    }
+
+    @Test
+    public void test2(){
+        JedisPoolConfig config = new JedisPoolConfig();
+        // 设置最大连接数
+        config.setMaxTotal(10);
+        //设置最大空闲
+        config.setMaxIdle(3);
+        JedisPool pool = new JedisPool(config,"192.168.120.8",6379);
+        Jedis jedis = pool.getResource();
+        jedis.auth("123");
+        jedis.set("age","23");
+        System.out.println(jedis.get("name"));
+        jedis.close();
+        pool.close();
+    }
+
+}
