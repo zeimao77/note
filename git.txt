@@ -1,4 +1,4 @@
-GIT常用命令----------------------------------------------
+﻿GIT常用命令----------------------------------------------
 
 安装git[CentOS]
 yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel
@@ -32,6 +32,9 @@ git push命令可以把当前分支master推送到远程
 git push -u origin master
 由于远程库是空的，我们在第一次推送的时候，加上-u参数，GIT不但会把本地的master分支内容推送到远程，还会把本地的master与远程master分支关联起来，在以后的推送或者摘取时可以简化命令。
 git push origin master
+
+将README.md文件同步到本地
+git pull --rebase origin master
 
 git clone git@github.com:zeimao77/repo-name.git
 github给出的地址有多个，因为GIT支持多种协议，git://使用ssh 但也可以使用https等其它协议
