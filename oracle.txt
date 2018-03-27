@@ -31,6 +31,7 @@ Oracle 系统用户
 
  [username/password][@server][as sysdba|sysoper]
 
+ sqlplus /nolog 不进入数据库登录 利用conn命令连接
  connect username/password [as sysdba]  服务器与客户端在同一机器上 不用输入服务地址
  show user命令  查看登录用户
  dba_users数据字典：
@@ -38,12 +39,14 @@ Oracle 系统用户
  alter user username account unlock 解锁
  alter user username account lock 锁定
 
+ select table_name from user_tables;
+
  表空间：
   表空间概念：
   一个数据库由一个或多个表空间组成
   永久表空间：永久化存放的对象
   临时表空间：数据库操作过程中临时存放数据
-  UNDO表空间：事务修改之前的数据
+  UNDO【回退】表空间：事务修改之前的数据
   查看用户的表空间
   创建、修改、删除表空间
 
@@ -64,7 +67,7 @@ Oracle 系统用户
 
 创建表空间
 create [temporary] tablespace <tablespace_name> tempfile|datafile 'xxx.dbf' size xx
-create tablespace test 'f:/database/test.dbf' size 20M;
+create tablespace test datafile 'f:/database/test.dbf' size 20M;
 
 dba_data_files 数据字典 
 select * from dba_data_files where tablespace_name = 'TEST';
@@ -259,6 +262,12 @@ set autotrace on
 可以开启sql调试
 
 用户管理（系统权限、对象权限）
+create user abc identified by 123;
+select username from dba_users;
+grant connect,resource,dba to abc;
+create tablespace test datafile 'D:/app/zeimao77/oradata/test/test.dbf' size 100M;
+select * from dba_tablespaces;
+alter user abc default tablespace test;
 使用DCL(数据控制语言)可以实现用户权限的控制，但必需维护用户的对象信息。
 create user 用户名 identified by 密码; -创建用户,但是没有任何权限
 grant <permissions> to <username>
@@ -266,6 +275,9 @@ grant <permissions> to <username>
 create session;create sequence;create synonym(创建同名对象);create table(在用户模式创建表);create any table(在任何模式创建表);drop table(在用户模式删除表);drop any table(在任何模式删除表);create procedure;create user;create view;drop user;execute any procedure;...
 正常操作需要地堆权限，所以ORACLE里提供了两个角色 CONNECT,RESOURCE。分配这两个角色的用户就可以正常操作了。
 grant connect,resource to <username> 给用户分配connect、resource角色
+connect 拥有连接权限的用户可以登录ORACLE 不可以创建实体 不可以创建数据库结构
+resource 拥有resource权限的用户只可以创建实体，不可以创建数据库存结构
+dba 拥有全部特权
 一量有了用户，用户可能存在忘记密码，
 alter user <username> identified by <new-password>
 alter user <username> password expire;
@@ -275,8 +287,13 @@ alter user <username> account lock/unlock
 grant select,insert on scott.emp to abc;
 回收权限
 revoke <permissions> from <username>
-删除用户
+删除用户【级联删除数据】
 drop user dog cascade 
+
+角色：
+ORACLE角色role是一组权限的集合
+create role role_name  创建角色
+grant 权限 to role_name
 
 数据的导入导出
 数据的导出：
@@ -408,8 +425,33 @@ close cemp;
 end;
 /
 
+PLSQL
+面向过程对sql语言的扩展
+PL/SQL块的基本结构
+DECLARE
+//声明部分，声明变量 常量 复杂数据类型 游标
+BEGIN
+//执行部分  PL/SQL语句和SQL语句
+EXCEPTION
+//异常处理部分 处理支行错误
+END;
+//块结束
 
 
+PLSQL块的分类
+匿名块：动态构造，只能执行一次
+子程序：存储在数据库中的存储过程，函数及包等。当数据库上建立好后可以在其它程序中调用它们
+触发器：当数据库发生操作时，会触发一些事件，从而自动执行相应的程序
 
+变量命令规则：
+程序变量   v_name
+程序常量   c_name
+游标变量   name_curror
+异常标识   e_name
+记录类型   name_record
 
-
+变量类型：
+数值类型： NUMBER(p,s)  以及子类型int float
+字符类型： CHAR(n) VARCHAR2(n)
+日期类型： DATE
+布尔类型： BOOLEAN
