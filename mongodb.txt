@@ -1,0 +1,120 @@
+关系型数据库           NOSQL数据库
+数据库                数据库
+表                    集合
+行                    文档
+列                    成员
+
+
+开始mongodb服务
+mongod -f conf/mongodb.conf
+
+连接mongodb服务器
+mongo localhost:27017/test
+
+创建/切换数据库
+use test
+
+删除数据库
+db.dropDatabase()
+
+创建集合
+db.createCollection("emp")
+
+查询集合
+show collections
+
+//插入数据
+db.test_collection.insert({x:1})
+
+查询数据
+db.test_collection.find()
+db.test_collection.find().skip(5).limit(3).sort({x:1})
+比较运算
+大于
+db.emp.find({"age":{"$gt":30}},{"_id":0})
+大于等于
+db.emp.find({"age":{"$gte":28}},{"_id":0})
+小于
+db.emp.find({"age":{"$lt":30}},{"_id":0})
+小于等于
+db.emp.find({"age":{"$lte":28}},{"_id":0})
+逻辑运算
+与
+db.emp.find({"$and": [{"age":{"$gt":30}},{"wage":{"$gte":18000}}]})
+或
+db.emp.find({"$or": [{"age":{"$gt":30}},{"wage":{"$gte":18000}}]})
+非
+db.emp.find({"name":{"$ne":"张三"}})
+或非
+db.emp.find({"$nor": [{"age":{"$gt":30}},{"wage":{"$gte":18000}}]})
+求模（8,18,28,38.....）
+db.emp.find({"age":{"$mod":[10,8]}})
+范围查询
+db.emp.find({"name"：{"$in":["张三","李四","林冲"]}})
+db.emp.find({"name"：{"$nin":["张三","李四","林冲"]}})
+数组查询
+db.students.find({"score":{"$all":["鬼谷子","孙子兵法"]}})
+db.students.find({"score":{"$size":3}})
+第一门课程是语文
+db.students.find({"score.0":"语文"})
+只显示前两门课程
+db.students.find({"score":{"$size":3}},{"score":{"$slice":2}})
+只显示后两门课程
+db.students.find({"score":{"$size":3}},{"score":{"$slice":-2}})
+跳过一门 显示下两门（即显示二三门）
+db.students.find({"score":{"$size":3}},{"score":{"$slice":[1,2]}})
+
+判断字段是否存在
+db.students.find({"parents.ba":{$exists: true}})
+db.students.find({"parents.ba":{$exists: false}})
+where
+对于where这类操作是属于进行每一行的信息判断，实现上对于数据量较大的情况并不方便使用
+db.students.find({"$where":"this.age<22"})
+db.students.find("this.age<22")
+多条件的and连接
+db.students.find({"$and":[{"$where":"this.age >23"}, {"$where":"this.age <29"}]})
+虽然这种形式的操作可以实现数据查询，但是最大的缺点是将在mongodb里面保存的bson数据变为了javascript的语法结构。这样的方式不方便使用数据库的索引机制。
+
+正则运算
+基础语法：{key:正则标记};
+完整语法：{key:{"$regex":正则标记,"$options":选项}};
+对于options主要是设置正则的信息查询的标记：
+  -i  忽略字母大小写
+  -m  多行查找
+  -x  空白字符串除了被转义的或在字符类中以外的完全被忽略
+  -s  匹配所有的字符，包括换行内容
+db.students.find({"name":/^孙/})
+
+排序
+升序：sort({字段：1});
+降序：sort({字段：-1});
+db.students.find({}).sort({ "age":-1 })
+自然排序：
+在进行排序过程里面有一种自然排序，即按照数据保存的先后顺序排序，使用“$natural"表示
+db.students.find({}).sort({ "$natural":-1 })
+
+数据分页显示
+skip(n) 表示跨过N个数据行
+limit(n)  取出的数据行的个数限制
+db.students.find({}).sort({ "$natural":-1 }).skip(0).limit(5)
+
+
+更新数据
+db.test_collection.update({x:256},{x:256,y:99,z:512})
+db.test_collection.update({x:256},{$set:{y:1024}})
+db.test_collection.update({y:555},{x:666},true)
+db.test_collection.update({x:666},{$set:{x:888}},false,true)
+
+删除数据
+db.test_collection.remove({x:888})
+
+查询索引
+db.test_collection.getIndexes()
+
+创建索引
+db.test_collection.ensureIndex({x:-1})
+
+索引
+id索引
+单键索引
+  
