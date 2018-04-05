@@ -100,13 +100,62 @@ db.students.find({}).sort({ "$natural":-1 }).skip(0).limit(5)
 
 
 更新数据
+语法：db.集合.update(更新条件,新对象数据（修改器），upsert,multi)
+upsert 如果不存在，true则增加，false不添加
+multi 是否更新查询到的所有记录，true则更新所有，false只更新查询到的第一条
 db.test_collection.update({x:256},{x:256,y:99,z:512})
 db.test_collection.update({x:256},{$set:{y:1024}})
 db.test_collection.update({y:555},{x:666},true)
 db.test_collection.update({x:666},{$set:{x:888}},false,true)
+save()函数与update()方法类似，但不常用 
+db.students.save({"_id":ObjectId("5ac48f931579d73530d2374e"),"age":29})
+修改器
+修改器1：$inc  主要针对于一个数字字段，增加某个数字字段的数据内容
+语法：{"$inc":{成员：内容}}
+所有人的年龄加100
+db.students.update({},{"$inc":{age:100}},false,true)
+修改器2：$set  进行内容的重新设置
+语法：{"set":{成员：新内容}}
+db.students.update({"name":"孙膑"},{$set:{"age":32}})
+修改器3：#unset  删除某个成员
+语法：{"$unset":{成员：1}}
+db.students.update({"name":"孙膑"},{$unset:{"parents":1}})
+修改器4：$push  将内容追加到指定的成员中（数组）
+语法：{"$push":{成员：值}}
+说明：用于数组的添加，如果成员不存在则创建，只能添加一个值
+db.students.update({"name":"孙膑"},{$push:{"score":"周易"}})
+修改器5：$pushAll  与push类似，可以一次追加多个内容到数组里面 
+语法：${"pushAll":{成员：内容数组}}
+db.students.update({"name":"孙膑"},{$pushAll:{"score":["美术","琴","棋"]}})
+修改器6：$addToSet  向数组里面增加一个新的内容，只有内容不存在才会添加
+语法：{"$addToSet":{成员：值}}
+db.students.update({"name":"孙膑"},{$addToSet: {"score":"周易"}})
+修改器7：$pop  删除数组内的数据
+语法：{"$pop":{成员：内容}}
+说明：内容设置为1则删除最后一个，内容设置为-1删除第一个
+db.students.update({"name":"孙膑"},{"$pop":{"score":1}})
+修改器8：  $pull 从数组中删除一个指定内容的数据
+语法：{"$pull":{成员：值}}
+db.students.update({"name":"孙膑"},{"$pull":{"score":"语文"}})
+修改器9：  $pullAll  一次性删除多个内容
+语法：{"$pullAll":{成员：值数组}}
+db.students.update({"name":"孙膑"},{"$pullAll":{"score":["数学","美术","棋"]}})
+修改器10： $rename: 为成员名称重命名
+语法：{"$rename":{旧成员名称：新成员名称}
 
 删除数据
+语法：db.集合名.remove(删除条件,是否只删除一个数据)
 db.test_collection.remove({x:888})
+删除name字段包含有aaa或AAA的
+db.students.remove({"name":/aaa/i})文档
+
+游标：
+使用find()可以返回游标，可以使用printjson()函数可以输出内容
+var cursor = db.students.find({});
+while(cursor.hasNext()){
+    var doc = cursor.next();
+    print(doc.name);
+}
 
 查询索引
 db.test_collection.getIndexes()
@@ -114,7 +163,54 @@ db.test_collection.getIndexes()
 创建索引
 db.test_collection.ensureIndex({x:-1})
 
+删除索引
+语法：db.集合名.dropIndexes()  删除全部索引
+
+
 索引
+explain();查询函数分析
 id索引
 单键索引
-  
+语法：db.集合名称.ensureIndex({列名：排序模式})
+    排序模式设置的1表示索引将按照升序的方式进行排列;
+    设置的-1表示索引将按照降序的方式进行排列
+db.students.ensureIndex({"name":1})
+联合索引
+db.students.ensureIndex({"name":1,"age":1},{"name":"name_1_age_1_index"})
+唯一索引：使该字段值不重复
+创建唯一索引：
+db.students.ensureIndex({"name":1},{"unique":true,name:"name_unique_index"})
+查询会使用以上索引
+db.students.find({"name":"孙膑","age":22}).explain()
+如果添加重复信息，会报错E11000 
+过期索引
+时间到后数据会被自动删除，但时间不准确
+db.phones.ensureIndex({"time":1},{"expireAfterSeconds":10})
+db.phones.insert({"tel":"110","code":"110","time":new Date()})
+db.phones.insert({"tel":"112","code":"112","time":new Date()})
+db.phones.insert({"tel":"120","code":"120","time":new Date()})
+db.phones.insert({"tel":"130","code":"130","time":new Date()})
+db.phones.find({})
+全文索引
+db.news.ensureIndex({"title":"text","context":"text"},{"name":"title_text_context_text_index"})
+db.news.insert({"title":"java","context":"abccredis,java","time":new Date()})
+db.news.insert({"title":"html5","context":"bbchtml53dasfjava","time":new Date()})
+db.news.insert({"title":"mongodb","context":"mongodb_c#_abcc_python","time":new Date()})
+db.news.insert({"title":"java","context":"mongdb,sdafsdafsdaf","time":new Date()})
+db.news.insert({"title":"python","context":"python_mysql_oracle_c#","time":new Date()})
+单一条件查询
+db.news.find({$text: { $search: "java"}})
+或操作关系查询
+db.news.find({$text: { $search: "abccredisjava java"}})
+与操作关系查询
+db.news.find({$text: { $search: "\"java\" \"mongdb\""}})
+排除操作关系查询
+db.news.find({$text: { $search: "java -mongdb" }})
+查询按匹配分值进行排序 以实现更加准确的信息搜索
+db.news.find({$text: { $search: "java" }},{"score":{"$meta":"textScore"}}).sort({ "score":{"$meta":"textScore"}})
+为所有字段设置全文索引,尽可能别用，因为设置过多索引会导致效率变低
+db.集合名称.ensureIndex("$**":"text")
+地理信息索引
+平面索引  2D索引
+球面索引  2DSphere
+
