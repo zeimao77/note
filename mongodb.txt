@@ -47,6 +47,7 @@ db.emp.find({"$or": [{"age":{"$gt":30}},{"wage":{"$gte":18000}}]})
 db.emp.find({"name":{"$ne":"张三"}})
 或非
 db.emp.find({"$nor": [{"age":{"$gt":30}},{"wage":{"$gte":18000}}]})
+判断空值$ifNull
 求模（8,18,28,38.....）
 db.emp.find({"age":{"$mod":[10,8]}})
 范围查询
@@ -213,4 +214,275 @@ db.集合名称.ensureIndex("$**":"text")
 地理信息索引
 平面索引  2D索引
 球面索引  2DSphere
+
+//为shops的集合定义2D的索引，之后就可以实现坐标位置的查询,而要进行查询有两种方式
+//$near 查询，查询距离某个点最近的点
+//geoWithin 查询，查询某个形状内的点
+db.shops.drop()
+db.shops.ensureIndex({"loc":"2d"})
+db.shops.insert({"shop_name":"shop01",loc:[10,10]})
+db.shops.insert({"shop_name":"shop02",loc:[11,11]})
+db.shops.insert({"shop_name":"shop03",loc:[11,12]})
+db.shops.insert({"shop_name":"shop04",loc:[12,12]})
+db.shops.insert({"shop_name":"shop05",loc:[30,30]})
+db.shops.insert({"shop_name":"shop06",loc:[10,10]})
+db.shops.find({loc:{"$near":[11,11]}})
+//如果执行以上查询，实际上会将数据集合里面前100个点都返回
+//以下查询可以实现指定距离的查询，但不支持最小距离
+db.shops.find({loc:{"$near":[11,11],"$maxDistance":2}})
+//2D查询虽然支持最大距离，但不支持最小距离，但是可以使用查询范围
+//$geoWithin: 支持以下设置
+//矩形范围: {$box:[[x1,y1],[x2,y2]]}
+db.shops.find({"loc":{$geoWithin: {$box:[[0, 0],[ 11,11]]}}})
+//圆形范围: {$center: [[x1,y1],r]}
+db.shops.find({"loc":{$geoWithin: {$center:[[0,0],15]}}})
+//多边形: {$polygon: [[x1,y1],[x2,y2],[x3,y3],[x4,y4],......,[xn,yn]]}
+db.shops.find({"loc":{"$polygon": [[9,9],[9,11],[11,9]]}})   ==》》  "errmsg" : "unknown operator: $polygon"
+ 在mongoDB里面,除了一些支持的函数之外，还有一个重要的命令，runCommand(),这个函数可以执行特定的mongodb命令
+ db.runCommand({"geoNear:":"shop","near":[10,10],"maxDistance":5,"num":2})  ==>> "no such command: 'geoNear:'
+
+ 聚合
+获取集合数据量
+db.students.find({"name":/孙./i}).count()
+//消除重复数据
+db.names.insert({"name":"张三"})
+db.names.insert({"name":"张三丰"})
+db.names.insert({"name":"李四"})
+db.names.insert({"name":"李时针"})
+db.names.insert({"name":"张三"})
+db.names.find({}).count()
+db.names.distinct("name")
+//group操作
+db.names.aggregate({$group: {_id:"$name",_COUNT:{$sum: 1}}})
+//MapReduce
+//是整个大数据的精髓所在，在实际中不要使用，所谓MapReduce是将操作分两部进行
+//map操作是将数据取出
+//reduce负责数据的最后处理
+//使用MapReduce操作最终会将结果保存在一个单独的集合里面。
+//根据sex成员分组，取各文档name成员
+db.emp.mapReduce(
+    function(){emit(this.sex,this.name);},
+    function(key,value){return {"sex":key,"name":value};},{
+        out : "t_sex_emp"
+    })
+//执行之后所有的结果都保存在t_sex.emp
+db.t_sex.emp.find()
+//根据sex成员分组，取出文档name成员，最大年龄，平均工资，成员数量
+db.emp.mapReduce(
+    function(){
+        emit(this.sex,{"count":1,"name":this.name,"age":this.age,"wage":this.wage});
+    },
+    function(key,values){
+        var count = 0;
+        var max_age = values[0].age;
+        var sum_wage = 0;
+        var names = new Array();
+        for(var val in values){
+            names[val] = values[val].name
+            count += values[val].count;
+            sum_wage += values[val].wage;
+            if(values[val].age > max_age){
+                max_age = values[val].age;
+            }
+        }
+        var avg_wage = (sum_wage/count).toFixed(2);
+        return {"count":count,"max_age":max_age,"avg_wage":avg_wage,"names":names}
+    },{
+        "out":"t_sex_name_count_emp"
+    }
+    )
+db.t_sex_name_count_emp.find()
+
+聚合框架
+常用表达式：
+$sum            计算总和
+$avg            计算平均值
+$min            获取集合中所有文档对应最小值
+$max            获取集合中所有文档对应最大值
+$push           在结果文档中插入值到一个数组中
+$addToSet       在结果文档中插入值到一个数组中，但不会创建副本
+$first          根据资源文档的排序获取第一个文档数据
+$last           根据资源文档的排序获取最后一个文档数据
+group  主要进行分组数据操作，所有的分组数据都是无序的，并且都是在内存中完成的，所以并不支持大数据量
+db.emp.aggregate([{$group: {_id:"$sex",count:{"$sum":1}}}])
+//按sex成员分组对wage成员求和
+db.emp.aggregate([{$group: {_id:"$sex",sun_wage:{"$sum":"$wage"}}}])
+//按sex成员分组对wage求平均值
+db.emp.aggregate([{$group: {_id:"$sex",avg_wage:{"$avg":"$wage"}}}])
+//按sex成员分组对wage求最大值
+db.emp.aggregate([{$group: {_id:"$sex",avg_wage:{"$max":"$wage"}}}])
+//按sex成员分组对wage求最小值
+db.emp.aggregate([{$group: {_id:"$sex",avg_wage:{"$min":"$wage"}}}])
+//按性别显示人员
+db.emp.aggregate({$group: {_id:"$sex",names:{"$push":"$name"}}})
+//去除重复值
+db.emp.aggregate({$group: {_id:"$sex",names:{"$addToSet":"$name"}}})
+//查询第一个
+db.emp.aggregate({$group: {_id:"$sex",names:{"$first":"$name"}}})
+//查询最后一个
+db.emp.aggregate({$group: {_id:"$sex",names:{"$last":"$name"}}})
+$project处理  投影
+可以利用$project来控制数据列的显示规则，只有设置进去的参数才会显示，_id默认显示 
+db.emp.aggregate({$project: {"_id":0,"name":1}})
+//四则运算
+$add             加
+$subtract        减
+$multiply        乘
+$divide          除
+$mod             模
+除了四则运算之外
+求年薪
+db.emp.aggregate({$project: {"name":1,"sex":1,"year_wage":{$multiply: ["$wage",12]}}})
+
+字符串操作
+$concat            连接
+$substr            截取
+$toLower           转小写
+$toUpper           转大写
+$strcasecmp        忽略大小写
+
+db.emp.aggregate({$project: {
+    _id:0,
+    "name":{$substr:["$name",0,3]},
+    "性别":"$sex",                 //别名
+    "deptno":{$eq: ["$deptno",1]}
+}})
+//查询姓名，性别，年薪; 条件：月工资小于10000，结果降序排列
+db.emp.aggregate([
+    {$match: {"wage":{$lte:10000}}},
+    {$project: {_id:0,"name":1,"sex":1,"year_wage":{$multiply: ["$wage",12]}}}, 
+    {$sort: {"year_wage":-1}}
+])
+
+分页：
+$limit  用于分页数据
+$skip  用于跨过数据
+db.students.aggregate([
+    {$project: {"_id":0,"name":1,"age":1,"score":1}},
+    {$skip: 3}, 
+    {$limit: 3}
+    ])
+
+$unwind  将数组分成字符串显示，以方便查看
+db.students.aggregate([
+    {$match: {"name":{$eq: "孙膑"}}}，
+    {"$unwind": "$score"}
+    ])
+
+db.shops.aggregate([
+    {$geoNear: {
+        "near":[11,11], 
+        "distanceField":"loc", //显示距离
+        "maxDistance": 2, 
+        "num":3
+    }}
+    ])
+
+$out 利用此操作可以将查询结果输出到指定集合里面
+一般用来复制表
+
+固定集合
+所谓固定集合是指我们规定集合大小，如果要保存的数据内容超过了集合的长度，那么将采用LRU算法以最近最少使用原则将数据删除，从而保存新的数据
+如果要想使用固定集合必需使用createCollection()函数创建
+//capped = true  表示集合为固定集合
+//size = 1024  表示空间大小为1024
+//max = 5   表示最大条数为5条
+db.createCollection("capp",{"capped":true,"size":1024,"max":5})
+for (let i = 0; i < 10; i++) { 
+    db.capp.insert({"key":i,"value":"val"+i})
+};
+db.capp.find({})
+
+GridFs  在mongoDB里面支持图片、音乐、视频等二进制存储
+mongofiles  指令完成
+mongofiles --port=端口 put 文件名
+mongofiles --port=端口 list
+在mongodb里面有一个fs系统集合，这个集合默认保存在test数据库下面
+use test;
+db.fs.files.find()
+删除文件
+mongofiles --port=端口 delete 文件名
+
+用户管理 
+必需在服务器启动的时候打开授权认证
+必需配置用户密码 角色
+mongodb数据库的授权认证是针对数据库的
+创建用户
+db.createUser(
+   {
+     user: "abc",
+     pwd: "123",
+     roles: [ {role:"readWrite", db:"test"} ]
+   }
+)
+在配置文件添加
+auth = true
+登录的时候使用用户名密码登录
+mongo -u abc -p 123
+改密码，需要设置为非授权
+db.changeUserPassword(用户名，新密码)
+
+java对mongodb3的操作
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
+import static com.mongodb.client.model.Filters.*;
+
+
+public class Mongo3Demo {
+
+    public static void main(String[] args){
+        MongoClientURI uri = new MongoClientURI("mongodb://abc:123@locallinux.top:27017/?authSource=test");
+        MongoClient client = new MongoClient(uri);
+        MongoDatabase test_database = client.getDatabase("test");
+        MongoCollection<Document> students_coll =  test_database.getCollection("students");
+        //添加
+        ArrayList<Document> list = new ArrayList<Document>();
+        for(int i=0;i<10;i++){
+            Document document = new Document();
+            document.append("no",10+i);
+            document.append("name","name_"+i);
+            document.append("sex",i%3==1?"男":"女");
+            document.append("score", Arrays.asList("测试1","测试2"));
+            list.add(document);
+        }
+        //添加
+        students_coll.insertMany(list);
+        Pattern pattern = Pattern.compile("NAME_",Pattern.CASE_INSENSITIVE);
+
+        BasicDBObject bcond = new BasicDBObject();
+        bcond.put("no",new BasicDBObject().append("$lte",16));
+        bcond.append("name",new BasicDBObject().append("$regex",pattern));
+        //修改
+        UpdateResult updateresult = students_coll.updateMany(eq("name","name_0"),
+                new BasicDBObject("$set",new BasicDBObject("name","name_修改后")));
+        System.out.println("更新："+updateresult.getModifiedCount()+"条数据");
+        //查询
+        FindIterable<Document> ite =  students_coll.find(bcond);
+        MongoCursor cursor = ite.iterator();
+        while(cursor.hasNext()){
+            System.out.println(cursor.next());
+        }
+        DeleteResult deleteresult = students_coll.deleteMany(regex("name",pattern));
+        System.out.println("删除了"+deleteresult.getDeletedCount()+"条数据！");
+        client.close();
+    }
+
+
+}
+
+
 
