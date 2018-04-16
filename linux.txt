@@ -1,0 +1,78 @@
+权限相关配置文件
+保存用户组的信息文件 /etc/group 存储当前系统中所有用户组信息
+group : x          : 123    : abc,def
+组名  : 组密码占位符：组编号  ：组中用户名列表
+存储当前系统中用户组密码信息  /etc/gshadow
+group : *                      :      :abc,def
+组名称：组密码（*/!//表示空密码）：管理员：成员列表
+存储当前系统中用户相关信息  /etc/passwd
+user   : x     : 123      : 456       : xxxxxxxx      : /home/user   : /bin/bash
+用户名 ：密码   ：用户编号  :用户组编号 ： 用户注释信息   ： 用户主目录   ： shell类型
+存储用户密码的配置文件  /etc/shadow
+user    : vf;/zu8sf......:::::
+用户名  : 密码            :::::
+
+添加用户组：
+groupadd 用户组
+修改组名称：
+groupmod -n 新组名称 旧组名称
+修改组编号，不存在则创建：
+groupmod -g 组编号 组名称
+wr删除用户组  删除组前需要先删除用户
+groupdel 组名称
+添加用户：
+useradd -g 组名 用户名
+useradd -d 用户文件夹(/home/用户名)  用户名
+usermod命令用于修改
+删除用户：
+userdel 用户名   保留个人文件夹
+userdel -r 用户名    删除个人文件夹
+禁止普通用户登录服务器：  touch /etc/nologin
+禁用帐户： passwd -l 用户
+解锁帐户： passwd -u 用户
+清除密码： passwd -d 用户
+修改密码： passwd 用户名
+
+添加到附属组：
+gpasswd -a 用户名 
+修改组密码
+gpasswd 组名称
+切换组：
+newgrp 组名
+
+-文件
+d目录
+l软链接
+
+rwxrwxrwx
+u=所有者权限 g=所属组权限 r=其它人权限
+r 读 = 4
+w 写 = 2
+x 执行 = 1
+
+其它权限：
+改变文件所有者：
+chown 用户名 文件名
+chown 用户名：组名 文件名
+chgrp 组名 文件名
+
+umask文件默认权限
+umask  查询默认权限
+umask 值  设置umask权限 临时有效
+/etc/
+因为建立文件最大权限为666，文件不应该一建立就具有执行权限，文件的默认权限为666换成字母：666（-rw-rw-rw-）-022(-----w--w-) = (-rw-r--r--)
+目录最在权限是777
+777（drwxrwxrwx） - 022(d----w--w-) = (drwxr-x--x)
+
+sudo权限
+命令：visudo   查看修改配置
+配置文件 /etc/sudoers
+格式：
+root  ALL=(ALL)   ALL
+用户  被管理主机持址=（可使用身份） 授权命令（绝对路径）
+%组名   ALL = （ALL） ALL
+组名  被管理主机地址=（可使用身份） 授权命令（绝对路径）
+例：
+abc  ALL=(ALL) /sbin/shutdown -r now
+
+sudo -l 查看可用的sudo命令
