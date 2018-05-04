@@ -281,6 +281,12 @@ __getitem__()                定义获取容器中指定元素的行为self[key]
 __setitem__()                定义设置容器中指定元素的行为self[key] = value
 __delitem__()                定义删除容器中指定元素的行为del self[key]
 
+@classmethod
+调用的时候用类名，而不是某个对象
+@property
+像访问属性一样调用方法
+
+
 例：=============================================
 class Upp(str):
   def __new__(clacc,string):

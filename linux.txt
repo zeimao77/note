@@ -76,3 +76,48 @@ root  ALL=(ALL)   ALL
 abc  ALL=(ALL) /sbin/shutdown -r now
 
 sudo -l 查看可用的sudo命令
+
+定时任务：
+at一次性定时任务
+如果系统中慧存在/etc/at.allow文件，那么只有写入/etc/at.allow文件（白名单）中的用户可以使用at命令（/etc/at.deny（黑名单）文件会被忽略）
+如果两个文件都不存在，那么只有root用户可以使用
+at [选项] 时间
+选项：
+  -m 当at工作完成时，无论是否命令有输出，都用email通知执行at命令的用户
+  -c 工作号：显示该at工作的实际内容
+
+时间：
+ -HH:MM
+ -HH:MM YYYY-MM-DD
+ -HH:MM[am|pm][month][date]
+ -HH:MM[am|pm]+[minutes|hours|days|weeks]
+ 例：at now +5 minutes
+ atq查询已经存在的系统任务
+
+
+crontab循环定时任务
+/etc/crin.allow     /etc/cron.deny文件与at相同
+crontab -e
+进入crontab编辑页面，会打开vim编辑工作
+＊　＊　＊　＊　＊
+第一个＊　一小时当中的第几分钟　　　０-５９
+第二个＊　一天当中第几个小时　　　　０－２３
+第三个＊　一个月当中第几天　　　　　１-３１
+第四个＊　一年当中第几月　　　　　　１-１２
+第五个＊　一周当中的星期几　　　　　０-７（０，７都代表周日）
+配合特殊符号：
+＊　代表任何时间。
+，　代表不连续的时间，比如“０ 8,12,16 * * *”代表8：00 12:00 16:00执行
+-   代表连续的时间，比如“0,5,* * 1-6”代表在周一到周六5:00执行
+/   代表每隔多久执行一次  比如“*/10 * * * * ”代表每隔10分钟执行一次
+查询定时任务
+crontab -l 
+清除所有定时任务
+crontab -r
+/etc/crontab配置文件
+*  *  *  *  * user-name  command to be executed
+              用户        命令
+
+anacron
+anacron可以保证在系统关机的时候错过的定时任务，可以在系统开机之后再执行
+

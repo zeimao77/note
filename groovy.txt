@@ -1,0 +1,80 @@
+groovy是用于java虚拟机的一种敏捷的动态语言，它是一种成熟的面向对象的编程语言，既可以用于面向对象编程，又可以用作纯粹的脚本语言。
+groovy完成兼容JAVA语法
+特性：
+分号可选
+类、方法默认Public
+编译器自动添加get/set方法
+属性可以直接用点获取
+最后一个表达式将返回
+==等同于equals()，并且不会空指针异常
+类型可选
+括号可选
+字符串有三种表达方式 
+集合API
+例：==================================================
+import java.sql.Array
+
+class ProjectVersion{
+    private int major
+    private int minor
+
+    ProjectVersion(int major,int minor){
+        this.major = major
+        this.minor = minor
+    }
+
+    int Major(){
+        major
+    }
+}
+ProjectVersion p = new ProjectVersion(3,5)
+println p.Major()
+println p.minor
+
+def version = 1
+assert version == 1
+println version
+def str1 = 'string1'
+def str2 = "string2 可以使用 ${version} 插入变量"
+def str3 = '''string3 可以
+换行'''
+println str1
+println str2
+println str3
+
+println "================================="
+def bts = ['java',"python"]
+bts << 'groovy'
+assert bts.getClass() == ArrayList
+assert bts.size() == 3
+def bts2 = ['ant':2000,'maven':2009]
+bts2.gradle = 2009
+println bts2.ant
+println bts2['ant']
+
+println "闭包================================="
+def c1 = {
+    v -> println v
+}
+def c2 = {
+    println "hello"
+}
+//使用闭包作为参数
+def method1(Closure closure){
+    closure("param")
+}
+def method2(Closure closure){
+    closure()
+}
+//调用
+method1(c1)
+method2(c2)
+
+
+
+
+gradle
+task 
+dependsOn
+doFirst
+doLast

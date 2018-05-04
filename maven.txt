@@ -1,0 +1,62 @@
+项目结构
+src
+   -main
+      -java
+         -package
+   -test
+      -java
+         -package
+   resources
+
+mvn -v               查看版本
+	test             测试
+    compile          编译
+    package          打包
+  	clean            清除target
+  	install          安装jar到本地仓库
+
+快速构建项目骨架
+mvn archetype
+archetype:generate
+archetype:generate -DgroupId=组织名
+                   -DartifactId=项目-模块名
+                   -Dverion=版本
+                   -Dpackage=代码所存在的包
+
+mvn archetype:generate -DgroupId=com.mav4.mai -DartifactId=mav4 -Dversion0.0.1SNAPSHOT -Dpackage=com.mav4.mai.pa1
+镜像配置：
+<mirror>
+  <id>镜像仓库ID</id>
+  <mirrorOf>central默认仓库名，可以使用*通配访问所有镜像</mirrorOf>
+  <name>名称</name>
+  <url>地址</url>
+</mirror>
+
+生命周期：
+clean:
+  pre-clean    执行清理前工作
+  clean        清理上一次构构建生成的文件
+  post-clean   执行清理后的文件
+default:
+  compile
+  test
+  compile
+  install
+site:
+  pre-site
+  site         生成发布文档
+  post-site
+  sete-deploy  发布到服务器
+
+
+<executions>  
+  <execution>  
+    <!-- 绑定source插件到Maven的生命周期 -->  
+    <phase>compile</phase>  
+    <!--在生命周期后执行绑定的source插件的goals -->  
+    <goals>  
+      <goal>jar-no-fork</goal>  
+      <goal>test-jar</goal>  
+    </goals>  
+  </execution>  
+</executions> 

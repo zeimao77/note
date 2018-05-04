@@ -1,0 +1,43 @@
+拉取镜像 nam名称 ：版本
+docker pull [OPTIONS] NAME:[TAG]
+查看本地镜像
+docker images [OPTIONS] [REPOSITORY][:TAG]
+创建image
+docker build
+列出容器
+docker ps
+删除容器
+docker rm
+删除image
+docker rmi
+本地与容器间复制文件
+docker cp
+提交改动生成新的Image
+docker commit 
+运行容器
+docker run [OPTIONS] IMAGE[:TAG][COMMAND][ARG]
+OPTIONS:
+-d  后台进进
+-p 主机端口：容器端口  docker run -d 8080:80  /hub.c.163.com/library/nginx
+docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+OPTIONS:
+-t  分配一个伪终端
+-i  即使没有附加也保持STDIN打开
+-ｄ　分离模式：在后台运行
+网络类型：
+Bridge  虚拟出独立网络
+Host    共用主机网络
+None    没有网络
+
+Dockerfile:
+FROM alpine:latest   定义基础镜像
+MAINTAINER zz        维护人
+RUN                  执行命令
+ADD                  添加文件（远程）
+COPY                 复制文件
+CMD command          执行命令
+EXPOSE               暴露端口
+WORKDIR              指定路径
+ENV                  设置环境变量
+USER                 指定用户，运行命令的身份
+VOLUME               mount point
