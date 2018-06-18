@@ -1,4 +1,4 @@
-SQL语言严格来说会分为三类
+﻿SQL语言严格来说会分为三类
  DML 数据操作语言：主要指的是数据库的查询和更新操作
  DDL 数据定义语言：主要指的是数据对象（表，用户）的创建部分，这部分需要使用到相关的范式
  DCL 数据库控制语言：主要是进行权限的管理操作
@@ -27,7 +27,7 @@ scott用户表的结构
 Oracle 系统用户
  sys system 高权限  sys > system
  sysman 用于操作企业管理器使用  管理员级别
- scott （tigger)
+ scott （tiger)
 
  [username/password][@server][as sysdba|sysoper]
 

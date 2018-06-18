@@ -1,4 +1,4 @@
-关系型数据库           NOSQL数据库
+﻿关系型数据库           NOSQL数据库
 数据库                数据库
 表                    集合
 行                    文档
@@ -25,6 +25,10 @@ show collections
 
 //插入数据
 db.test_collection.insert({x:1})
+
+删除
+db.students.deleteOne({"name":"zhangsan"})
+db.students.deleteMany({"name":"zhangsan"})
 
 查询数据
 db.test_collection.find()
