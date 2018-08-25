@@ -1,0 +1,35 @@
+1.以下SQL语句是如何进行的 ？
+========================
+环境：
+CREATE TABLE `score` (
+ 
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `name` varchar(32) DEFAULT NULL,
+ 
+ `kecheng` varchar(32) DEFAULT NULL,
+ 
+ `fenshu` int(3) DEFAULT NULL,
+ 
+ PRIMARY KEY (`id`)
+
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8
+
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('1','张三','语文','60');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('2','李四','语文','80');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('3','王五','语文','95');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('4','田七','语文','40');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('5','张三','数学','60');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('6','李四','数学','98');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('7','田七','数学','56');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('8','王五','数学','100');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('9','二麻','语文','99');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('10','二麻','数学','99');
+========================
+SQL：
+SELECT * FROM `score` t1 WHERE
+(
+SELECT COUNT(1) FROM `score` t2 WHERE
+t1.kecheng=t2.kecheng AND t2.fenshu>=t1.fenshu
+)<4
+ORDER BY t1.kecheng,t1.fenshu DESC;
