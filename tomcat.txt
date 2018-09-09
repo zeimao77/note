@@ -2,11 +2,50 @@ TOMCAT
 
 tomcat是符合java ee标准的最小的web server 它可以完成大部分的小型系统的开发。
 
-配置虚拟目录：
+版本：
+Tomcat            JDK            JAVAEE               Servlet               JSP
+9.x               8              javaEE8              4.0                   2.4
+8.x               7              javaEE7              3.1                   2.3
+7.x               6              javaEE6              3.0                   2.2
+6.x               5              javaEE5              2.5                   2.1
+
+目录：
+bin:
+	启动停止
+	\catalina.bat start
+	\catalina.bat stop
+conf:
+	\server.xml
+	\tomcat-users.xml
+	\web.xml
+lib:
+	依赖jar
+logs:
+	tomcat启动/运行时日志
+	catalina.2018-09-05.log   启动时控制台的输出
+webapps:
+	\ROOT\  没有uri时默认访问的文件夹
+	
+
+部署：
+1.静态部署
+<Host name="my.app.com" appBase="myapp"/>
+my.app.com 将访问到 %TOMCAT_HOME%\myapp 目录 
+或者直接利用默认配置webapps下面localhost访问
+
+2.每配置 Host主机将会在 %TOMCAT_HOME%\conf\Catalina 目录下生成目录
+\conf\Catalina\localhost
+在目录下新建xml文件 配置静态路径  也是通过uri定位的 文件名需要和path一致  desktop.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/desktop" docBase="C:\Users\zeimao77\Desktop"/>
+将可以通过localhsot:8080/desktop访问桌面文件
+
+
+3.配置虚拟目录：
 虚拟目录可以理解为项目保存的路径，而虚拟目录在磁盘上也就是一个文件夹，这个文件夹有一个要求：必需存在一个WEB-INF的目录，里面必需有一个web.xml的文件。
 在<Host>之上添加
 <Context path="/path" docBase="d:\path"/>
-可以添加虚拟目录
+可以添加虚拟目录，通过uri定位目录 
 path：表示浏览器上访问的路径
 docBase：表示对应的磁盘目录
 
@@ -21,3 +60,10 @@ docBase：表示对应的磁盘目录
 
 当用户访问”http://localhost:8080/path/hello.jsp“的时候，tomcat会将*.jsp文件自动编译成*.java文件，之后编译为.class文件执行
 所有的.java .class文件都放在work目录下
+
+登录及热部署
+1.配置用户信息  %TOMCAT_HOME%\conf\tomcat-users.xml
+<role rolename="manager-script"/>
+<role rolename="manager-gui"/>
+<user username="abc" password="123" roles="manager-gui,manager-script"/>
+登录localhost:8080 tomcat管理页面并登录应用管理页面,即可以进行热部署

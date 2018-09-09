@@ -1,0 +1,16 @@
+目录结构：
+bin  可执行脚本文件
+etc  配置目录 & 模块相关的配置
+modules  模块目录，存放.mod配置文件
+resources  classpath下的附加资源配置目录
+webapps  应用部署位置，
+lib  jetty所依赖的jar文件 以及模块所依赖的jar
+logs  日志
+demo-base  jetty默认的演示程序 
+start.ini  jetty默认的配置文件
+staqrt.jar  运行jetty的jar
+
+常用的配置文件
+start.ini   服务启动配置项
+etc/*.xml   jetty服务相关配置
+modules/*.mod    模块相关配置
