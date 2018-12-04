@@ -18,4 +18,47 @@ IPV5
 迁移工具（隧道/NAT-64）
 
 IPv6地址 = 前缀 + 接口标识
-前缀：相当于V4
+前缀：相当于V4中的网络ID
+接口标识：相当于v4地址中的主机ID
+
+地址段解析
+地址::/前缀   类似于v4的掩码
+2000::/3
+0010 0000 0000 0000:......  二进制前三位固定 所以范围从
+2000::
+3fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+
+
+IPV6地址分类：
+	单播地址：
+		全局单播地址2000::/3   只能在互联网被路由
+		链路本地地址：FE80::/10   类似于IPV4 169地址
+		环回地址::1/128
+		未指定地址::/128  =  0.0.0.0
+		唯一本地地址：FC00::/7    私有地址
+		内嵌IPV4地址::/80
+	多(主)播地址
+		已分配多播地址FF00::/8
+		被请求节点多播地址FF02::1:FF00:0/104
+	任意播地址
+
+
+链路本地地址：
+FE80::/10
+
+v4报头
+Ver(版本)     Service Type      Total Length(总长度)               <<==头  总长度可以确定负载
+4bit                            16bit
+Identification         Flag          Offset                       <<==分片重组
+TTL(存活时间)          Protocol(上层协议)         Header Checksum            
+8bit                                     头校验 防篡改
+Source Address 
+Destination Address
+Options(选项) + Padding(填充)
+
+v6报头
+Ver   Taffiic Class   Flow Label(预留)
+4bit   8bit           20bit
+Payload length       Next Header   Hop Limit
+Source Address 
+Destination Address
