@@ -18,9 +18,6 @@ ROUTINES表：提供了关于存储子程序（存储程序和函数）的信息
 VIEWS表：给出了关于数据库中的视图的信息。需要有show views权限，否则无法查看视图信息。
 TRIGGERS表：提供了关于触发程序的信息。必须有super权限才能查看该表
 
-
-
-
 MYSQL
 优化目的
  由于数据库timeout产生5xx错误
@@ -471,6 +468,114 @@ mysql> explain select teaname from teacher t,class c where t.teaid = c.teaid gro
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ================================================================================================================================
 
+InnoDB存储引擎是多线程的模型：
+1.Master Thread  核心线程
+2.IO Thread 	AIO(异步非阻塞IO)读、写、insert buffer、log IO
+3.Purge Thread 清除undolog日志
+4.Page Cleaner Thread 刷新脏页
+
+缓冲池：
+页（16K） 管理
+数据页类型：索引页、数据页、undo页、插入缓冲、自适应哈希索引、InnoDB存储的锁信息、数据字典信息等
+缓冲池通过LRU(最近最少使用)算法来进行管理。
+LRU List用来管理已读取的页，但当数据库刚启动时，LRU List列表是空的，即没有任何的页。这时页都存放在Free List中。当需要从缓冲池中分页时，首先从Free列表中查找是否有可用的空闲页，若有则将该页从Free列表中删除，放到LRU List中;
+LRU List用来管理缓冲池中的页的可用性，Flush List用来管理将页刷新到磁盘
+额外内存：对于一些数据结构本身的内存进行分配时，需要从额外的内存池中进行申请，当该区域的内存不够时，会从缓冲池中进行申请
+
+CheckPoint
+1.Sharp Checkpoint  刷新全部脏页  关闭服务时进行
+2.Fuzzy Checkpoint  刷新部分脏页  正常运行时进行
+  Fuzzy Checkpoint进行时刻：
+    1.Master Thread Checkpoint  定时任务
+    2.FLUSH_LRU-LIST Checkpoint   LRU列表快满时刷新
+    3.Async/Sync Flush Checkpoint   重做日志不可用时刷新
+    4.Dirty Page too much Checkpoint   脏页太多
+
+Master Thread工作方式：
+void master_thread(){
+	goto loog;
+loog:
+for(int i=0;i<10;i++) {
+	thread_sleep(1);
+	刷新日志缓冲到磁盘
+	if(前1秒内IO<5次 表示压力小) {
+		合并插入缓冲;
+	}
+	if(当前缓冲池的脏页比例 > innodb_max_dirty_pages_pct) {
+		刷新至多100个脏页到磁盘;
+	}
+	if(没有活动用户) {
+		goto background loop;
+	}
+}
+if(10秒内IO < 200次，表示压力小) {
+	刷新最多100个脏页到磁盘
+}
+合并到多5个插入缓冲;
+刷新日志缓冲到磁盘;
+删除无用的undo页
+if(当前缓冲池脏页比例 > 70%) {
+	刷新至多100个脏页到磁盘
+} else {
+	刷新至多10个用脏页到磁盘
+}
+background loog:
+删除无用的undo页;
+合并20全插入缓冲;
+if( not idle) {
+	goto loop;
+	} else {
+	goto flush loop;
+	}
+flush loop:
+刷新100脏页到磁盘
+if(当前缓冲区的脏页比较 > innodb_max_dirty_pages_pct) {
+	goto flush loog;
+}
+goto suspend loop;
+suspend loop:
+suspend_thread();
+等待事件;
+goto loog;
+}
 
 
+性能配置：
+## 启用独立的Purge Thread来回收事务提交后的undo页 提高innoDB的性能
+innodb_purge_threads=1
+
+#开始各种buffer选项
+innodb_change_buffering= inserts | deletes | purges | all | none
+
+
+InnoDB存储引擎
+## 查看MYSQL InnoDB IO Thread   缓冲区
+SHOW ENGINE INNODB STATUS;
+## 查询缓冲区的大小
+###　缓冲区存放：索引页 数据页 undo页 插入缓冲 自适应哈希索引 InnoDB存储的锁信息 数据字典信息等
+SHOW VARIABLES LIKE 'innodb_buffer_pool_size'
+## 查询缓冲区实例的数量 
+SHOW VARIABLES LIKE 'innodb_buffer_pool_instances'
+
+INNODB收获：
+1.index Cardinality属性及更新机制
+2.分区表存储的使用
+3.Master Thread线程功能及参数调整
+4.覆盖索引优化及优化原理-（计数）...
+6.改变索引时锁的处理机制使用 Online DDL
+7.在线架构变更使用 Online Schema Change
+8.联合索引内部结构理解
+9.索引提示(USE INDEX)及强制索引（FORCE INDEX）的使用
+10.MRR（随机访问磁盘优化）的机制及原理   Using MRR
+11.ICP 索引查询优化原理及使用  全文索引的查询语法
+12.数据库锁的机制 及利用三张锁相关表进行锁状态的判断
+13.一致性非锁定读快照的机制导致各种事务隔离及别对读出数据的影响，及其原因
+14.INNODB一致性锁定读的用法  一致性读锁在外键插入、更新时的运用机制 
+15.自增长AUTO-INC Locking锁 并发的问题及对性能的影响
+	事务必需等待前一个插入完成，虽然不用等待事务完成
+16.三类锁的算法机制和各种隔离级别的关系，以及导致脏读，幻读，丢失更新的根本原因，
+对于银行系统丢失更新的后果，也是为什么更多使用串行化隔离级别。
+17.数据库死锁的产生及解决方案有哪些？超时设置及，等待图的原理？死锁时的innodb回滚机制是怎么样的？
+18.扁平事务、带有保存点的扁平事务、链事务、分布式事务、嵌套事务的特点及实现，在导入大量数据时可以利用事务实现的特点写磁盘等方式
+对导入进行优化以提高导入速度（redo undo）。
 

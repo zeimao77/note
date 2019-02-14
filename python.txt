@@ -1,4 +1,163 @@
-﻿isinstance(变量，变量类型（int/float/str...）)判断数据类型
+数据类型：
+1.数字    price=2.50
+  bin(val) 二进制
+  oct(val) 八进制
+  hex(val) 十六进制
+2.字符串   name="zhangsan"
+3.列表     list=["python","java","c++","c#"]
+  append(element)
+  extend(List)
+  insert(i,element)
+  remove(element) 
+  pop(index)
+  clear()
+  index(element)
+  count(element)
+  sort()
+  reverse()  倒序
+
+
+  列表推导式
+  list = []
+  list = [(x,y) for x in [1,2,3] for y in [4,5,6] if x!=y ]
+
+4.元组     ta = (404,"page not found")
+5.字典     dic = {'name':'zhangsan','age':20}   
+  dic.get(key)
+  dic.items()
+  dic.keys()
+  dic.values()
+
+6.对象     obj
+7.集合     s = set()   s={}
+  add(element)
+  pop()
+  clear()
+  update()
+  difference(Set)       -操作
+  intersection(Set)     &操作
+  union(Set)            |操作
+  symmetric_difference(Set)          ^操作
+
+变量作用域
+class  def   lambda会引入新的作用域
+global 局部修改全局变量
+nolocal 闭包修改自由环境变量
+
+
+
+
+迭代器
+iter() 获取迭代器
+next(iter)   获取下一个元素   过界StopIteration异常
+
+生成器
+1.
+list = [2*x for x in range(3)]    推导式
+gen = (2*x for x in range(3))     生成器   gen是一个迭代器
+
+2.
+def fun()
+  yield 1
+  yield 2
+  yield 3
+
+
+
+输出：
+print('r=%d' % r)
+
+格式化
+capitalize(word)
+center(width,str)
+count(str,begin,end)
+endswith(suffix,begin,end)
+expandtabs(tabsize)  tab转空格
+find(str,begin,end)
+index(str,begin,end)
+isalnum() 是否字母或数字
+istitle()
+join(seq) 链接seq中所有元素
+ljoin(width [,fillchar])  原串左对齐直接字符到指定长度   str.ljust(20,'#')
+rjoin(width [,fillchar])
+split(str[, len]);
+
+输入输出
+f = open(文件名，模式，encoding="utf-8")
+f.readline()
+f.readlines()
+f.read(2)
+...
+f.write()
+...
+f.seek(offset) 移动指针
+
+with open("text.txt") as f:
+  f.read()
+自动关闭文件
+文件模式
+http://www.runoob.com/python/python-files-io.html
+
+函数
+必需参数
+关键字传参
+默认参数   def fun(p='default'):
+不定长参数  def fun(*args):
+
+成员运算
+in 
+not in
+
+身份运算
+不可变对象：
+数字
+字符串
+元组
+is    == 
+is not
+
+
+序列函数：
+工厂函数
+list(iter)
+tuple(iter)
+操作函数
+len(list)
+max(list,lambda)
+min(list,lambda)
+sum(list) 数值求和
+zip()
+sorted(list,lambda)
+reversed(list)   返回逆向迭代器
+enumerate(iter)     返回索引,元素===>>> 
+=====================================  
+for i,ite in enumerate(list):
+  print(i, ite);
+=====================================
+e = enumerate(list)
+print(e.__next__())
+
+常用函数：
+abs()
+pow()
+round()
+min()
+max()
+sum()
+
+模块 math
+pi
+e
+floor()
+ceil()
+pow(x,y)
+sqrt(x)
+exp(x)     e^x
+trunc()
+
+模块 random
+
+isinstance(变量，变量类型（int/float/str...）)判断数据类型
 assert 判断条件
 len(求长度的对象)
 range([start,]stop[,step])    ==>> range(0,stop,1);   for i in range(10)
@@ -98,6 +257,14 @@ pickle_file = open("my_list.pkl","rb")
 my_list1 = pickle.load(pickle_file)
 pickle.close()
 
+condition 非0   非None  非空为真
+if condition1:
+  statement_block1
+elif condigion2:
+  statement_block2
+else:
+  statement_block3
+
 异常处理
 try:
   语句
@@ -113,6 +280,18 @@ while 条件:
   循环体 
 else:
   顺利执行完循环体将执行
+
+
+常见错误
+SyntaxError     语法错误 
+NameError       
+ZeroDivisionError      零除错误 
+IndexError      索引错误 
+ValueError      
+ModuleNotFoundError
+ImportError
+
+
 
 
 with open("data.txt","w") as f

@@ -33,3 +33,19 @@ SELECT COUNT(1) FROM `score` t2 WHERE
 t1.kecheng=t2.kecheng AND t2.fenshu>=t1.fenshu
 )<4
 ORDER BY t1.kecheng,t1.fenshu DESC;
+
+½â´ğ£º
+EXPLAIN SELECT * FROM `score` t1 WHERE
+(
+SELECT COUNT(1) FROM `score` t2 WHERE
+t1.kecheng=t2.kecheng AND t2.fenshu>=t1.fenshu
+)<4
+ORDER BY t1.kecheng,t1.fenshu DESC;
+
+    id  select_type         table   partitions  type    possible_keys  key     key_len  ref                    rows  filtered  Extra                                     
+------  ------------------  ------  ----------  ------  -------------  ------  -------  -------------------  ------  --------  ------------------------------------------
+     1  PRIMARY             t1      (NULL)      index   (NULL)         IND_    203      (NULL)                   12    100.00  Using where; Using index; Using filesort  
+     2  DEPENDENT SUBQUERY  t2      (NULL)      ref     IND_           IND_    99       zeimaodb.t1.kecheng       4     33.33  Using where; Using index                  
+
+
+
