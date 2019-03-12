@@ -67,3 +67,158 @@ docBase：表示对应的磁盘目录
 <role rolename="manager-gui"/>
 <user username="abc" password="123" roles="manager-gui,manager-script"/>
 登录localhost:8080 tomcat管理页面并登录应用管理页面,即可以进行热部署
+
+Server
+服务接收其它计算机（客户端）发来的请求数据并进行解析，完成相关业务处理，然后把处理结果作为响应返回给请客户端。通常情况下，我们通过使用socket监听服务器指定端口来实现该功能。
+[  server  ]
+[          ]
+[ +start() ]
+[ +stop()  ]
+
+很快的我们发现将监听服务与请求处理放到一起扩展性很差，比如当我们想适用多种网络协议，但请求处理却相同的时候。
+					[  server  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+[ Connector ]                         [  Container  ]
+[           ]                         [             ]
+[ +start()  ]                         [ +start()    ]
+[ +stop()   ]                         [ +stop()     ]
+一个Server可以包含多个Connector(链接器)和Container(容器)
+
+为了维护Connector 和Container的关系，我们将修改设计：
+					[  server  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+					[  Service  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+[ Connector ]                         [  Container  ]
+[           ]                         [             ]
+[ +start()  ]                         [ +start()    ]
+[ +stop()   ]                         [ +stop()     ]
+
+这样就可以实现网络协议和容器之间的解耦合
+当一个链接进来时，我们需要找到一个Web应用来处理，这时我们需要一个Engine来支持管理Web应用
+					[  server  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+					[  Service  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+[ Connector ]                           [  Engine  ]
+[           ]                           [             ]
+[ +start()  ]                           [ +start()    ]
+[ +stop()   ]                           [ +stop()     ]
+
+										[  Context  ]
+										[          ]
+										[ +start() ]
+										[ +stop()  ]
+
+
+此时我们又会遇到一个主机会承担多个域名的服务情况，我们会将每一个域名作为一个虚拟主机，在每个虚拟主机下包含多个Web应用。
+
+					[  server  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+					[  Service  ]
+					[          ]
+					[ +start() ]
+					[ +stop()  ]
+
+[ Connector ]                           [  Engine     ]
+[           ]                           [             ]
+[ +start()  ]                           [ +start()    ]
+[ +stop()   ]                           [ +stop()     ]
+
+										[  Host    ]
+										[          ]
+										[ +start() ]
+										[ +stop()  ]
+
+										[  Context ]
+										[          ]
+										[ +start() ]
+										[ +stop()  ]
+
+
+
+一个Connector需要完成以下功能：
+1.监听服务器端口，读取来自客户端的请求
+2.将请求数据按照协议进行解析
+3.根据请求正确的匹配容器进行处理
+4.将响应返回给客户端
+
+[ Connector ]       [ProtocolHander]
+[           ]       [              ]
+[ +start()  ]       [              ]
+[ +stop()   ]
+
+     [AbstractEndpoint]            [Processor]
+
+ProtocolHander表示一个协议处理器，针对不同协议和I/O方式，提供了不同的实现。如Http11NioProtocol
+EndPoint用于启动监听
+Processor用于读取解析请求
+Tomcat能过Mapper和MapperListener两个类实现上述功能。
+
+
+Tomcat请求示意
+EndPoint  接收请求
+Processor 解析请求
+CoyoteAdapter 连接Connector和Container 
+Mapper  请求路径映射表
+Engine  获取请求匹配Host的第一个Value并执行
+Host    获取请求匹配Context的第一个Value并执行
+Context 获取请求匹配Wrapper的第一个Value并执行
+Wrapper 构造FilterChain()
+FilterChain 执行Filter
+Servlet  执行Servlet
+
+类加载器
+J2SE标准类加载器
+JVM默认提供了三个类加载器：
+Bootstrap Class Loader    用于加载JVM提供的基础运行类;%JAVA_HOME%/jre/lib目录下的核心类库
+Extension Class Loader    用于加载扩展类库;%JAVA_HOME%/jre/lib/ext目录，该目录下的类库对所有基于该JVM运行的应用可见
+System Class Loader       用于加载环境变量CLASSPATH指定目录下的JAR包
+
+Tomcat类加载器
+根据TOMCAT架构及规范的考虑，tomcat对类加载器有如下要求：
+1.隔离性：Web应用类库相互隔离，避免依赖库或者应用包相互影响。
+2.灵活性：为了保证不同应用的类加载器的隔离，不同应该采用了不同的类加载器
+3.性能: 
+
+				[Bootstrap Class Loader]
+
+				[Extension Class Loader]
+
+				[System Class Loader]
+
+				[Common Class Loader]
+
+[Catalina Class Loader]           [Shared Class Loader]
+
+					[Web App1 Class Loader]        [Web App2 Class Loader]
+
+
+Common:以System为父类加载器，是位于TOMCAT应用服务器顶层的公用类加载器。其路径为common.loader,默认指向￥CATALINA_HOME/lib下的包
+Catalina: 以Common为父加载器，是用于加载TOMCAT应用服务器的类加载器，其路径为server.loader，默认为空。
+Shared:以Common为父加载器，是所有WEB应用的父加载器，其路径为shared.loader，默认为空。
+Web应用：以Shared为父加载器，加载/WEB-INF/classes目录下的未压缩的Class和资源文件以及/WEB-INF/lib目录下的JAR包，该类加载器只对当前应用可见。
+
+共享：TOMCAT通过common类加载器实现了jar包在应用服务器以及web应用之间共享
+            通过shared类加载器实现了jar包在web应用之间共享
+            通过Catalina类加载器加载服务器依赖的类
+隔离：除了serlvet规范定义的接口外，web应用不应该依赖服务器的任何实现类。
+
