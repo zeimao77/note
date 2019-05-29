@@ -107,7 +107,7 @@ crontab -e
 第五个＊　一周当中的星期几　　　　　０-７（０，７都代表周日）
 配合特殊符号：
 ＊　代表任何时间。
-，　代表不连续的时间，比如“０ 8,12,16 * * *”代表8：00 12:00 16:00执行
+，　代表s不连续的时间，比如“０ 8,12,16 * * *”代表8：00 12:00 16:00执行
 -   代表连续的时间，比如“0,5,* * 1-6”代表在周一到周六5:00执行
 /   代表每隔多久执行一次  比如“*/10 * * * * ”代表每隔10分钟执行一次
 查询定时任务
@@ -120,4 +120,128 @@ crontab -r
 
 anacron
 anacron可以保证在系统关机的时候错过的定时任务，可以在系统开机之后再执行
+
+
+
+
+1.shell变量
+Bash中变量默认类型都是字符串
+字符串型 / 整型 / 浮点型 / 日期型 
+
+环境变量 ： 
+设置环境变量 export 变量名=变量值 | export 变量名
+常见：
+HOSTNAME:主机名
+SHELL：当前Shell
+TERM:终端环境
+HISTSIZE:历史命令条数
+SSH_CLIENT:当前操作环境是用ssh连接的，这里记录客户端ip
+SSH_TTY:ssh连接的终端
+USER:当前登录的用户名
+PS1 ： 命令提示符
+/etc/sysconfig/i18n  开机启动语系
+位置参数变量 ： 用来向脚本传递参数 
+$n n为数字，$0代表命令本身;$1-$9代表第一到第九个参数，10以上的参数需要用大括号包含：${10}
+$* 这个变量代表命令行中所有的参数，$*把所有的参数看成一个整体
+for i in "$*"
+  do 
+    echo $i
+  done
+$@ 这个变量代表命令行中所有的参数，$@把每一个参数区分对待
+for y in "$@"
+  do 
+    echo $y
+  done 
+$# 这个变量代表命令行中所有的参数的个数
+预定义变量 ： Bash中已定义好的变量
+$? 最后一次执行的命令的返回状态。如果这个变量的值为0，证明上一个命令正确执行;如果这个变量的值是非0，则证明上一个命令执行不正确
+$$当前进程的进程号
+$!后台运行的最后一个进程的进程号
+
+
+变量名=变量值
+调用变量 $变量名
+变量追加：x=${x}456   
+删除变量|环境变量： unset x
+
+2.shell运算
+declare [+/-] [选项] 变量名
+- 给变量设定类型属性
++ 给变量取消类型属性
+-a 将变量声明为数组型 
+-i 将变量声明为整数型
+-x 将变量声明为环境变量
+-r 将变量声明为只读变量
+-p 显示指定变量的被声明的类型
+
+定义数组
+declare -a efutureapp[0]="8088|order|efuture-order"
+efutureapp[0]="8088|order|efuture-order"
+efutureapp[1]="8089|ofc|efuture-ofc"
+for i in ${efutureapp[*]}
+  do
+    echo $i
+  done
+
+shell数值运算
+=$(expr $aa + $bb)
+=$(($aa+$bb))
+=$[$aa+$bb]
+
++,-
+!,~
+*,/,%
++,-
+<<,>>
+<=,>=,<,>
+==,!=
+&
+^
+|
+&&
+||
+=,+=,-=,*=,/=,%=,&=,^=,|=,<<=,>>=
+
+字符串处理
+cut [选项] 文件名
+-f 列号 
+-d 分隔符
+
+awk '条件1{动作1}条件2{动作2}...' 文件名
+ 条件 一般使用关系表达式作为条件
+   BEGIN  动作开始前
+     awk 'BEGIN{FS=":"}'  指定分隔符
+	echo "aabc:bbcd:cccc" | awk 'BEGIN{FS=":"}{print $2}'
+   END    动作开始后
+ 动作 格式化输出/流程控制语句
+
+sed [选项] '[动作]' 文件名
+选项
+-n 一般sed命令会把所有数据都输出到屏幕，如果加入此选择则会把经过sed命令处理的行输出到屏幕
+-e 允许对输入数据应用多条sed命令编辑
+-i 用sed的修改结果直接修改读取数据的文件，而不是由屏幕输出
+动作：
+-a 追加
+-c 行替换
+-i 插入
+-p 打印
+-s 字符串替换
+
+
+
+
+set showcmd
+set number
+set nohlsearch
+set autoread
+set nobackup
+set noswapfile
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+set termencoding=utf-8
+filetype on
+filetype indent on
+filetype plugin on
+filetype plugin indent on
 

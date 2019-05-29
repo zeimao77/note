@@ -87,7 +87,6 @@ GIT会告诉我们，是.gitignore的哪一行规则忽略了文件
 git配置，显示不同颜色，会让命令输出更醒目
 git config --global color.ui true 
 
-
 github远程仓库
 添加一个新的远程仓库：git remote add [shortname] [url]
 git仓库与github之间传输是通过ssh加密的，需要配置验证信息：
