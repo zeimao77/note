@@ -1,0 +1,115 @@
+[iptables]
+IP信息我过滤系统由两部分组成  iptables + netfilter
+iptables输出网络通信日志
+iptables返回指定的内容
+
+网络防火墙的作用及原理
+  1.获取数据
+    嗅探、正常请求
+  2.识别
+    协议头、内容
+  3.过滤
+    丢弃、修改、放过、记录日志
+防火墙日志IDS IPS
+Netfilter是Linux内核的功能,由一些信息包过滤表组成、这些表包含内核用来控制信息包过滤处理的规则集
+
+iptables内置了三张表  配置后立即生效
+raw      处理异常 少用
+	PREROUTING链
+	OUTPUT链
+filter   负责过滤数据包，包括的规则链有input output forward
+	INPUT链
+	FORWARD链
+	OUTPUT链
+nat      涉及到网络地址的转换 包括的规则有prerouting postrouting output
+	PREROUTING链
+	POSTROUTING链
+	OUTPUT链
+mangle   表则主要应用在修改数据包的内容上，用来做流量整形、给数据包打标识，默认的规则有INPUT OUTPUT NAT POSTROUTING PREROUTING
+	PREROUTING链
+	POSTROUTING链
+	INPUT链
+	OUTPUT链
+	FORWARD链
+包分两类：
+	1.发给防火墙的包    不经FORWARD
+	2.流经防火墙的包
+
+表的优先级
+	raw > mangle > nat > filter
+链的匹配顺序：
+	入站 ： PREROUTING  INPUT
+	出站 ： OUTPUT  POSTROUTING
+	转发：  PREROUTING  FORWARD  POSTROUTING
+链内的匹配顺序
+	自上向下按顺序依次进行检查，找到相匹配的规则即停止（LOG选项表示记录相关日志）
+	若在该链上找不到相匹配的规则，则按该链的默认策略处理（默认为允许）
+
+iptables [-t 表名] 管理选项 [链名] [条件匹配] [-j 目录动作或跳转]
+	注意事项：
+	不指定表名默认filter表
+	不指定链名默认表示表内的所有链
+	除非设置规则链的缺省值策略、否则需要指定匹配条件
+iptables -L 查询规则
+丢弃所有filter  input链匹配到的包   禁止所有人访问
+iptables -t filter -A INPUT -j DROP     
+删除规则
+iptables -t filter -d INPUT -s 192.168.0.1 -j DROP
+设置INPUT链的默认规则DROP
+iptables -P INPUT DROP
+清空所有链
+iptables -F
+清空指定链
+iptable -F INPUT
+
+Linux>
+iptables    >> 命令行界面 
+接口         >>　规则配置
+内核　　　　　>>  Netfilter
+
+iptables  -t [nat|filter|mangel]
+          -A 追加
+          -D 删除
+          -E 
+          -F 清空     匹配规则
+          -I 
+          -L 
+          -N 
+          -P 设置默认规则
+          -R 替换
+
+          -J TOP
+             SAME
+             RETURN
+             TTL
+             ACCEPT
+             DROP         Options
+             REJECT
+             DNAT
+             SNAT
+             REDIRECT
+             ROUTE
+             LOG
+             ULOG
+
+netfilter网络控制点
+PREROUTING   >   ROUTING     >     FORWARD      >     POSTROUTING
+					  v                                     ^
+                    INPUT               >                 OUTPUT
+
+
+匹配模式
+  流入、流出接口(-i -o)
+  -i <匹配数据进入网络接口> 此参数主要应用于nat表，例如目标地址转换
+  -i eth0 匹配是否从网络接口eth0进来
+  来源、目的地址(-s,-d)
+  -s 匹配来源地址 可以是IP NET DOMAIN 也只可以为空（任何地址）
+  -s 192.168.0.1 匹配来自192.168.0.1的数据包
+  -s 192.168.0.0/16 匹配来自192.168.0.0/16的数据包
+  -s www.abc.com  匹配来自www.abc.com的数据包
+  协议类型     (-p)
+  -p tcp
+  来源、目的端口（--sport、--dport)
+  --sport 1000 匹配源端口是1000的数据包
+  --sport 1000:3000 匹配1000-3000的数据包（包含）
+

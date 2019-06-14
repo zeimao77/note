@@ -1,0 +1,67 @@
+java之gradle 
+
+1.插件
+plugins {
+    id 'java'
+}
+
+Java插件为项目添加了许多任务
+除了默认的代码资源布局外;我们可以自定义源布局
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+version = '1.2.1'
+
+依赖管理
+ implementation 扩展 compile
+ compileOnly仅编译时间依赖项，而不是在运行时使用
+ compileClasspath 扩展 compile, compileOnly, implementation编译在编译源代码时使用的类路径。由任务使用compileJava
+ annotationProcessor编译期间使用的注释处理器。
+ runtimeOnly仅运行时依赖项。
+ runtimeClasspath 扩展 runtimeOnly, runtime, implementation运行时类路径包含实现的元素以及仅运行时元素。
+ testImplementation 扩展 testCompile, implementation仅实现测试的依赖性。
+ testCompileOnly仅用于编译测试的附加依赖项，不在运行时使用。
+ testCompileClasspath 扩展 testCompile, testCompileOnly,testImplementation测试编译类路径，在编译测试源时使用。由任务使用compileTestJava。
+ testRuntime（已弃用）延伸 runtime, testCompile仅用于运行测试的其他依赖项。被取代testRuntimeOnly。
+ testRuntimeOnly 扩展 runtimeOnly仅运行时运行测试的依赖项。
+ testRuntimeClasspath 扩展 testRuntimeOnly, testRuntime, testImplementation用于运行测试的运行时类路径。由任务使用test。
+ archives这个项目产生的工件（例如罐子）。由任务使用uploadArchives。
+ default 扩展 runtime 项目依赖项对此项目使用的默认配置。包含此项目在运行时所需的工件和依赖项。
+
+Java插件为项目添加了许多约定属性
+ String reporting.baseDir相对于构建目录，生成报告的目录的名称。默认值：reports
+ (read-only) File reportsDir生成报告的目录。默认值：buildDir/reporting.baseDir
+ String testResultsDirName生成测试结果.xml文件的目录的名称，相对于构建目录。默认值：test-results
+ (read-only) File testResultsDir生成测试结果.xml文件的目录。默认值：buildDir/testResultsDirName
+ String testReportDirName相对于reports目录，生成测试报告的目录的名称。默认值：tests
+ (read-only) File testReportDir生成测试报告的目录。默认值：reportsDir/testReportDirName
+ String libsDirName相对于构建目录，生成库的目录的名称。默认值：libs
+ (read-only) File libsDir生成库的目录。默认值：buildDir/libsDirName
+ String distsDirName相对于构建目录，生成分发的目录的名称。默认值：distributions
+ (read-only) File distsDir生成分发的目录。默认值：buildDir/distsDirName
+ String docsDirName相对于构建目录，生成文档的目录的名称。默认值：docs
+ String docsDirName相对于构建目录，生成文档的目录的名称。默认值：docs
+ (read-only) File docsDir生成文档的目录。默认值：buildDir/docsDirName
+ String dependencyCacheDirName用于缓存源依赖关系信息的目录的名称，相对于构建目录。默认值：dependency-cache
+ (read-only) SourceSetContainer sourceSets包含项目的源集。默认值：不为null SourceSetContainer
+ JavaVersion sourceCompatibility编译Java源时使用的Java版本兼容性。默认值：使用JavaVersion的当前JVM的版本。也可以使用String或Number设置，例如'1.5'或1.5。
+ JavaVersion targetCompatibility用于生成类的Java版本。默认值：sourceCompatibility。也可以使用字符串或数字设置，例如'1.5'或1.5。
+ String archivesBaseName用于存档的基本名称，例如JAR或ZIP文件。默认值：projectName
+ Manifest manifests要包含在所有JAR文件中的清单。默认值：空清单。
+
+
+
+命令
+gradle build -x test  跳过测试运行
+
+
