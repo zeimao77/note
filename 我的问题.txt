@@ -59,5 +59,8 @@ ORDER BY t1.kecheng,t1.fenshu DESC;
 3.在除乘2^n时  我们可以使用位运算符来加快计算
 4.在选择数据结构时，如果有多种结构符合我们要求时,要慎重考虑哪个结构更理想
 
-
+4.在spring的注解中：@Configuration作用何在?
+@Configuration重在解决bean之间的依赖关系
+官网说明如下：
+仅当@Bean在@Configuration类中声明该方法时，此声明bean间依赖性的方法才有效。您不能使用普通@Component类声明bean间的依赖关系。
 
