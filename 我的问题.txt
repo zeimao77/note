@@ -1,6 +1,6 @@
-1.ÒÔÏÂSQLÓï¾äÊÇÈçºÎ½øĞĞµÄ £¿
+1.ä»¥ä¸‹SQLè¯­å¥æ˜¯å¦‚ä½•è¿›è¡Œçš„ ï¼Ÿ
 ========================
-»·¾³£º
+ç¯å¢ƒï¼š
 CREATE TABLE `score` (
  
  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -15,18 +15,18 @@ CREATE TABLE `score` (
 
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8
 
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('1','ÕÅÈı','ÓïÎÄ','60');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('2','ÀîËÄ','ÓïÎÄ','80');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('3','ÍõÎå','ÓïÎÄ','95');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('4','ÌïÆß','ÓïÎÄ','40');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('5','ÕÅÈı','ÊıÑ§','60');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('6','ÀîËÄ','ÊıÑ§','98');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('7','ÌïÆß','ÊıÑ§','56');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('8','ÍõÎå','ÊıÑ§','100');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('9','¶şÂé','ÓïÎÄ','99');
-insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('10','¶şÂé','ÊıÑ§','99');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('1','å¼ ä¸‰','è¯­æ–‡','60');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('2','æå››','è¯­æ–‡','80');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('3','ç‹äº”','è¯­æ–‡','95');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('4','ç”°ä¸ƒ','è¯­æ–‡','40');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('5','å¼ ä¸‰','æ•°å­¦','60');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('6','æå››','æ•°å­¦','98');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('7','ç”°ä¸ƒ','æ•°å­¦','56');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('8','ç‹äº”','æ•°å­¦','100');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('9','äºŒéº»','è¯­æ–‡','99');
+insert into `score` (`id`, `name`, `kecheng`, `fenshu`) values('10','äºŒéº»','æ•°å­¦','99');
 ========================
-SQL£º
+SQLï¼š
 SELECT * FROM `score` t1 WHERE
 (
 SELECT COUNT(1) FROM `score` t2 WHERE
@@ -34,7 +34,7 @@ t1.kecheng=t2.kecheng AND t2.fenshu>=t1.fenshu
 )<4
 ORDER BY t1.kecheng,t1.fenshu DESC;
 
-½â´ğ£º
+è§£ç­”ï¼š
 EXPLAIN SELECT * FROM `score` t1 WHERE
 (
 SELECT COUNT(1) FROM `score` t2 WHERE
@@ -46,6 +46,12 @@ ORDER BY t1.kecheng,t1.fenshu DESC;
 ------  ------------------  ------  ----------  ------  -------------  ------  -------  -------------------  ------  --------  ------------------------------------------
      1  PRIMARY             t1      (NULL)      index   (NULL)         IND_    203      (NULL)                   12    100.00  Using where; Using index; Using filesort  
      2  DEPENDENT SUBQUERY  t2      (NULL)      ref     IND_           IND_    99       zeimaodb.t1.kecheng       4     33.33  Using where; Using index                  
+
+
+2.åœ¨springå¼€å‘ä¸­  æˆ‘ä»¬å¯ä»¥ä½¿ç”¨init-methodå±æ€§æ¥é…ç½®ä¸€ä¸ªåˆå§‹åŒ–æ–¹æ³•   ä¹Ÿå¯ä»¥ä½¿ç”¨InitializingBean æ¥å£æ¥åˆå§‹åŒ–ä¸€ä¸ªå®ä¾‹
+è¿™ä¸¤ç§æ–¹å¼å®Œå…¨çš„æ•ˆæœå‡ ä¹å®Œå…¨ç›¸åŒï¼Œè¿™ä¸¤ç§æ–¹å¼å„æœ‰ä»€ä¹ˆåº”ç”¨åœºæ™¯ï¼Œæˆ–è€…è¯´å„æœ‰ä»€ä¹ˆä¼˜åŠ£ï¼Ÿ
+
+ç­”ï¼šç»§æ‰¿æ¥å£çš„æ–¹å¼å¼ºè¡Œå°†æˆ‘ä»¬çš„ä»£ç è€¦åˆåˆ°äº†springã€‚
 
 
 
