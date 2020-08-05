@@ -418,6 +418,18 @@ new Vue({
 		}
 	]
 ```
+步骤6 hook
+[官网文档](https://router.vuejs.org/zh/guide/advanced/navigation-guards.html#%E5%85%A8%E5%B1%80%E5%89%8D%E7%BD%AE%E5%AE%88%E5%8D%AB)
+
+```javascript
+//路由跳转的前置钩子函数
+router.beforeEach((to, from, next) => {
+  document.title = to.matched[0].meta.title;
+  next()
+})
+//路由跳转的后置钩子函数
+router.afterEach()
+```
 
 路由中的传参
 /src/router/index.js
@@ -495,4 +507,27 @@ export default {
     },
   },
 };
+```
+
+
+
+## 保持活性  
+keep-alive是vue的一个内置组件，可以使组件保留状态，避免重新渲染
+它有两个重要属性include、exclude用来添加或排除缓存，这里配置组件的name属性
+```xml
+<keep-alive>
+  <router-view />
+</keep-alive>
+``` 
+与之相关有两函数
+```javascript
+  //当页面被激活的时候触发
+  activated() {
+    console.log("activated");
+  },
+  //当页面失活的时候触发 
+  deactivated() {
+    console.log("deactivated");
+  },
+
 ```
