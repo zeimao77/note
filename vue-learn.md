@@ -182,7 +182,6 @@ const compDemo = Vue.extend({
 })
 ```
 
-
 注意：
 组件不可以访问vue实例的数据
 
@@ -219,90 +218,6 @@ alias: {
 },
 ```
 
-```javascript
-
-//pro.config.js
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const { merge } = require('webpack-merge');
-const baseConfig = require('./base.config.js');
-
-module.exports = merge(baseConfig, {
-    plugins: [
-        new UglifyJsPlugin()
-    ]
-});
-
-//dev.config.js
-const { merge } = require('webpack-merge');
-const baseConfig = require('./base.config.js');
-
-module.exports = merge([baseConfig, {
-    devServer: {
-        contentBase: './dist',
-        port: 9000,
-
-    }
-}]);
-
-//base.config.js
-const path = require('path');
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
-
-module.exports = {
-    entry: './src/main.js',
-    mode: 'development',
-    output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist')
-    },
-    module: {
-        rules: [{
-            test: /\.css$/,
-            use: ["style-loader", "css-loader"]
-        }, {
-            test: /\.(png|jpg|gif|jpeg)$/,
-            use: [
-                {
-                    loader: 'url-loader',
-                    options: {
-                        limit: 8192
-                    }
-                }
-            ]
-        }, {
-            test: /\.(png|jpg|gif)$/,
-            use: [
-                {
-                    loader: 'file-loader',
-                    options: {}
-                }
-            ]
-        }, {
-            test: /\.vue$/,
-            loader: 'vue-loader'
-        }, {
-            test: /\.less$/,
-            use: [{
-                loader: "style-loader"
-            }, {
-                loader: "css-loader"
-            }, {
-                loader: "less-loader"
-            }]
-        }]
-    },
-    plugins: [
-        new VueLoaderPlugin(),
-    ],
-    // runtime-compiler
-    // resolve: {
-    //     alias: {
-    //         'vue$': 'vue/dist/vue.esm.js'
-    //     }
-    // }
-};
-
-```
 
 ## vue-router 
 步骤1 安装vue-router  
@@ -431,7 +346,7 @@ router.beforeEach((to, from, next) => {
 router.afterEach()
 ```
 
-路由中的传参
+路由中的传参  
 /src/router/index.js
 ```javascript
 const routes = [
@@ -451,11 +366,13 @@ const routes = [
   }
   ];
 ```
-/src/App.vue
-```xml
+
+/src/App.vue  
+```xml  
 <router-link to="/userInfo/abc">userInfo</router-link>|
 <router-link :to="{path:'/firstPage',query:{userCode:'abc',userName:'zeimao77'}}">firstPage</router-link>
 ```
+
 取参  
 /src/util/routerutils.js
 ```javascript
@@ -473,6 +390,7 @@ export {
     pathParam, queryParam
 }
 ```
+
 /src/views/UserInfo.vue  
 ```javascript
 import * as r from "../util/routerutils.js";
@@ -488,6 +406,7 @@ export default {
   },
 }
 ```
+
 /src/views/FirstPage.vue
 ```javascript
 import * as r from "../util/routerutils.js";
@@ -509,9 +428,8 @@ export default {
 };
 ```
 
-
-
 ## 保持活性  
+[官网文档](https://cn.vuejs.org/v2/api/#keep-alive)  
 keep-alive是vue的一个内置组件，可以使组件保留状态，避免重新渲染
 它有两个重要属性include、exclude用来添加或排除缓存，这里配置组件的name属性
 ```xml
@@ -519,6 +437,11 @@ keep-alive是vue的一个内置组件，可以使组件保留状态，避免重�
   <router-view />
 </keep-alive>
 ``` 
+与之相关有三个属性  
+1. **include** - 字符串或正则表达式。只有名称匹配的组件会被缓存。
+2. **exclude** - 字符串或正则表达式。任何名称匹配的组件都不会被缓存。
+3. **max** - 数字。最多可以缓存多少组件实例。  
+
 与之相关有两函数
 ```javascript
   //当页面被激活的时候触发
@@ -531,3 +454,417 @@ keep-alive是vue的一个内置组件，可以使组件保留状态，避免重�
   },
 
 ```
+## vuex  
+
+安装：
+```bash
+npm install vuex --save
+```
+
+vuex有五个非常重要的属性：
+
+1. state 单一状态树  
+对于一个未在此初始化的属性，并不能正常做到响应式刷新视图。这时候我们需要使用Vue提供的两个函数来实现  
+```javascript
+Vue.set(对象或列表,键值或索引,新值);
+Vue.delete(对象或列表，键值或索引);
+```
+
+2. 更改 Vuex 的 store 中的状态的唯一方法是提交 mutation。  
+```javascript
+// 定义mutations 
+mutations: {
+    setTabBarActive(state, payload) {
+        state.tabbarActive = payload.tabbarActive;
+        console.log("change state tabbarAcitve:" + state.tabbarActive);
+    },
+    tabBarActive(state, o) {
+        state.tabbarActive = o;
+        console.log(state.tabbarActive);
+    }
+}
+// 提交的方法通常有两种：
+// 方式一：
+this.$store.commit("tabBarActive", data.tabBarTitle);
+// 方式二:
+this.$store.commit({
+  type: "setTabBarActive",
+  tabbarActive: data.tabBarTitle,
+});
+```
+
+3. action 
+[官方文档](https://vuex.vuejs.org/zh/guide/actions.html)  
+Action 可以包含任意异步操作。  
+
+## axios
+
+**全局axios**
+```javascript
+import axios from 'axios'
+axios.defaults.baseURL = "https://zm.duzhaoteng.com";
+//使用：
+axios({
+    url: "/qiqiweb/rest/open/iphoneClock"
+}).then(result => {
+    context.commit({
+        type: mf.MF_NEXTWORKDAY,
+        data: result.data,
+    });
+});
+```
+
+**axios实例**
+
+```javascript
+const inst1 = axios.create({
+  baseURL:"http://www.baidu.com"
+  timeout: 3000
+})
+```
+
+## 最终项目示例配置
+
+目录结构
+```bash
+├── package.json
+├── build
+│   ├── base.config.js
+│   ├── dev.config.js
+│   ├── dist
+│   │   └── index.html
+│   └── pro.config.js
+├── node_modules
+│   ├── ......
+└── src
+    ├── App.vue
+    ├── assets
+    │   ├── css
+    │   └── img
+    ├── components
+    │   └── content
+    ├── main.js
+    ├── network
+    │   └── main-request.js
+    ├── router
+    │   └── index.js
+    ├── store
+    │   ├── actions.js
+    │   ├── index.js
+    │   ├── mutations.js
+    │   └── mutation-type.js
+    ├── util
+    │   └── routerutils.js
+    └── views
+        └─── home
+            └── Home.vue
+```
+
+webpack.json   
+```json
+{
+  "name": "web-demo2",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "webpack --config ./build/pro.config.js",
+    "dev": "webpack --config ./build/dev.config.js",
+    "start": "webpack-dev-server --config ./build/dev.config.js --open"
+  },
+  "keywords": [],
+  "author": "zeimao77",
+  "devDependencies": {
+    "cnpm": "^6.1.1",
+    "css-loader": "^4.0.0",
+    "file-loader": "^6.0.0",
+    "less": "^3.12.2",
+    "less-loader": "^6.2.0",
+    "style-loader": "^1.2.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "url-loader": "^4.1.0",
+    "vue": "^2.6.11",
+    "vue-loader": "^15.9.3",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.44.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.0.9"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "vue-router": "^3.4.2",
+    "vuex": "^3.5.1"
+  }
+}
+```
+
+build/base.config.js  
+```javascript
+const path = require('path');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+
+module.exports = {
+    entry: "/home/zeimao77/桌面/web-demo2/src/main.js",
+    output: {
+        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: ["style-loader", "css-loader"]
+            }, {
+                test: /\.(png|jpg|gif)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            esModule: false
+                        }
+                    }
+                ]
+            }, {
+                test: /\.vue$/,
+                loader: 'vue-loader'
+            }, {
+                test: /\.less$/,
+                use: [{
+                    loader: "style-loader"
+                }, {
+                    loader: "css-loader"
+                }, {
+                    loader: "less-loader"
+                }]
+            }]
+    },
+    plugins: [
+        new VueLoaderPlugin(),
+    ],
+    resolve: {
+        alias: {
+            '@': path.resolve('src'),
+        }
+    }
+};
+```
+
+build/dev.config.js  
+```javascript
+const { merge } = require('webpack-merge');
+const baseConfig = require('./base.config.js');
+const path = require('path');
+
+module.exports = merge([baseConfig, {
+    devServer: {
+        contentBase: path.resolve(__dirname, 'dist'),
+        port: 9000,
+        hot: true,
+        historyApiFallback: true
+    }
+}]);
+```
+build/pro.config.js  
+```javascript
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const { merge } = require('webpack-merge');
+const baseConfig = require('./base.config.js');
+
+module.exports = merge(baseConfig, {
+    mode: 'production',
+    plugins: [
+        new UglifyJsPlugin()
+    ]
+});
+```
+
+src/main.js
+```javascript
+import Vue from 'vue'
+import App from '@/App.vue'
+import router from '@/router/index'
+import store from '@/store/index'
+
+Vue.config.productionTip = false
+
+axios.defaults.baseURL = "https://zm.duzhaoteng.com";
+
+new Vue({
+    router,
+    store,
+    render: h => h(App)
+}).$mount('#app')
+```
+路由 
+src/router/index.js
+```javascript
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+
+Vue.use(VueRouter)
+
+const Home = () => import("@/views/home/Home.vue")
+
+const routes = [
+    {
+        path: "",
+        redirect: "/home"
+    }, {
+        path: "/home",
+        component: Home
+    }
+]
+
+const router = new VueRouter({
+    mode: 'history',
+    base: process.env.BASE_URL,
+    routes
+})
+
+export default router
+```
+
+AJAX    
+src/network/main-request.js  
+```javascript
+import axios from 'axios'
+
+function mainRequest(conf) {
+    const mainwork = axios.create({
+        baseURL: "https://zm.duzhaoteng.com",
+        timeout: 3000
+    })
+
+    mainwork.interceptors.request.use(config => {
+        console.log(config);
+        return config;
+    }, err => {
+        console.log(err);
+    });
+    return mainwork(conf);
+}
+
+export {
+    mainRequest
+}
+```
+
+vuex 
+src/store/index.js  
+```javascript
+import Vue from 'vue'
+import Vuex from 'vuex'
+import mutations from '@/store/mutations'
+import actions from '@/store/actions'
+
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+    state: {
+        tabbarActive: "首页",
+        nextWorkDay: "1970-01-01",
+        userInfo: {
+            loginState: 1,
+            userName: "zeimao",
+            token: "sadfDFlasdownbcx",
+            role: "admin"
+        }
+    },
+    mutations,
+    actions,
+    getters: {
+
+    },
+    modules: {
+
+    }
+
+})
+
+export default store
+```
+src/store/actions.js  
+```javascript  
+import * as mf from '@/store/mutation-type'
+import { mainRequest } from '@/network/main-request'
+
+export default {
+    [mf.AF_SETUSERINFO](context, payload) {
+        console.log(payload);
+        return new Promise((resolve, reject) => {
+            mainRequest({
+                url: "/qiqiweb/rest/open/iphoneClock"
+            }).then(result => {
+                context.commit({
+                    type: mf.MF_NEXTWORKDAY,
+                    data: result.data,
+                });
+            });
+            setTimeout(() => {
+                context.commit({
+                    type: mf.MF_SETUSERINFO,
+                    loginState: 1,
+                    userName: "zeimao77",
+                    token: "AFBDEFG"
+                });
+                resolve("AF用户登录完成！！！");
+            }, 2000);
+        })
+    }
+}
+```
+
+src/store/mutation-type.js  
+```javascript
+export const MF_SETTABBARACTIVE = "SETTABBARACTIVE";
+export const AF_SETUSERINFO = "SETUSERINFO";
+export const MF_SETUSERINFO = "SETUSERINFOA";
+export const MF_NEXTWORKDAY = "NEXTWORKDAY";
+```
+
+src/store/mutations.js  
+```javascript 
+import * as mf from '@/store/mutation-type'
+
+export default {
+    [mf.MF_SETTABBARACTIVE](state, payload) {
+        state.tabbarActive = payload.tabbarActive;
+        console.log("change state tabbarAcitve:" + state.tabbarActive);
+    },
+    [mf.MF_SETUSERINFO](state, payload) {
+        state.userInfo.loginState = payload.loginState;
+        state.userInfo.userName = payload.userName;
+        state.userInfo.token = payload.token;
+    },
+    [mf.MF_NEXTWORKDAY](state, payload) {
+        console.log("payload")
+        console.log(payload)
+        state.nextWorkDay = payload.data.data.nextWorkDay;
+    },
+    tabBarActive(state, o) {
+        state.tabbarActive = o;
+        console.log(state.tabbarActive);
+    }
+}
+```
+
+src/util/routerutils.js  
+```javascript
+const pathParam = function (vueComp, paramName) {
+    var paramsMap = vueComp.$route.params;
+    return paramsMap[paramName];
+};
+
+const queryParam = function (vueComp, queryName) {
+    var paramMap = vueComp.$route.query;
+    return paramMap[queryName];
+}
+
+export {
+    pathParam, queryParam
+}
+
+```
+
+
+
