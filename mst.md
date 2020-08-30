@@ -8,7 +8,7 @@
 2. JVM线程的状态迁移过程描述：
 > 
 
-![线程的状态迁移过程描述](./img/thread_state_graph.svg)
+![线程的状态迁移过程描述](https://zm.duzhaoteng.com/stadir/img/thread_state_graph.svg)
 
 3. volatile关键字的作用。一般在什么情况下使用volatile关键字。
 > 答：volatile的作用有  
