@@ -84,6 +84,12 @@ git push origin dev
 git push --force
 ## 删除远程分支
 git push origin --delete dev
+## 推送tag:mergedev1到远程 
+git push origin mergedev1
+## 将所有tag推送到远程
+git push origin --tags
+## 删除远程的tag
+git push origin :refs/tags/mergedev1
 ```
 
 ### pull 
@@ -102,6 +108,8 @@ git checkout master
 git checkout -b dev remotes/origin/dev
 ## 将文件恢复到历史某一版本 
 git checkout b1f2bab -- a.txt
+## 创建游离分支，切换到tag:createatxt
+git checkout createatxt
 ```
 
 ### branch 
@@ -112,7 +120,8 @@ git branch -a
 git branch -d dev
 ## 重命名分支
 git branch -m dev dev1
-
+## 将本地分支关联到远程分支
+git branch --set-upstream-to=origin/dev dev
 ```
 
 ### log 
@@ -186,7 +195,7 @@ git stash show -p 123
 ## 将远程库更新到本地库 但不执行合并操作
 git fetch 
 ## 创建一个本地dev1分支，关联远程dev分支
-git fetch origin dev:deva
+git fetch origin dev:dev1
 ```
 
 ### reset 
@@ -230,6 +239,19 @@ git mv aa.txt txt/
 git mv css assets/
 ```
 
+### tag
+```bash
+## 列出以merge开头的tag  
+git tag -l merge*
+## 删除某个tag  
+git tag -d mergedev1
+## 创建一个带有备注信息的tag 
+git tag -a mergedev1 -m 'mrege-updataatxt'
+## 显示tag详细信息
+git show mergedev1
+## 为某一次提交创建tag 
+git tag -a createatxt -m "create_file_atxt" 7351f52
+```
 
 ### update-index 
 ```bash 
