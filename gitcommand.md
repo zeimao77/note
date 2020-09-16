@@ -239,6 +239,18 @@ git mv aa.txt txt/
 git mv css assets/
 ```
 
+### clean 
+```bash 
+## 测试哪些文件将要被清除
+git clean -n
+ ## 删除当前目录下没有被track过的文件,不包含被.gitignore文件忽略的内容
+git clean -f
+## 删除当前目录下没有被track过的文件和文件夹,不包含被.gitignore文件忽略的内容
+git clean -df
+## 删除当前目录下所有没有track过的文件,不管他是否被.gitignore文件忽略
+git clean -xf
+```
+
 ### tag
 ```bash
 ## 列出以merge开头的tag  
@@ -247,10 +259,24 @@ git tag -l merge*
 git tag -d mergedev1
 ## 创建一个带有备注信息的tag 
 git tag -a mergedev1 -m 'mrege-updataatxt'
-## 显示tag详细信息
-git show mergedev1
 ## 为某一次提交创建tag 
 git tag -a createatxt -m "create_file_atxt" 7351f52
+```
+
+### show 
+```
+## 查看某一次提交的详细信息及提交内容
+git show f9a8392d82d1a9c001a531d93b80d2fcd3511399
+## 显示tag详细信息
+git show mergedev1
+```
+
+### blame 
+```bash 
+## 查看某个文件的修改历史
+git blame b.txt 
+## 查询某个文件的修改历史，信息更详细
+git blame --line-porcelain -L 1,1 a.txt
 ```
 
 ### update-index 
