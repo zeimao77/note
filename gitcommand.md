@@ -174,6 +174,10 @@ git rebase dev
 git rebase --abort
 ## 丢弃掉此提交
 git rebase --skip
+## 将多次提交合并到一次提交,常用命令:
+## s:将此次提交合并到先前提交
+## d:删除此次提交  
+git rebase -i 000ae04  
 ```
 
 ### stash
@@ -239,11 +243,17 @@ git mv aa.txt txt/
 git mv css assets/
 ```
 
+### cherry-pick
+```bash
+## 从其它分支上选择某次或者几次提交合并到此分支。
+git cherry-pick 0ae3442 fa5ec14
+```
+
 ### clean 
 ```bash 
 ## 测试哪些文件将要被清除
 git clean -n
- ## 删除当前目录下没有被track过的文件,不包含被.gitignore文件忽略的内容
+## 删除当前目录下没有被track过的文件,不包含被.gitignore文件忽略的内容
 git clean -f
 ## 删除当前目录下没有被track过的文件和文件夹,不包含被.gitignore文件忽略的内容
 git clean -df
